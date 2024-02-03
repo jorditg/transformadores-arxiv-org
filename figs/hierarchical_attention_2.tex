@@ -1,0 +1,155 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{fixltx2e}
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{positioning}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+%%%>
+
+\tikzset{%
+	do path picture/.style={%
+		path picture={%
+			\pgfpointdiff{\pgfpointanchor{path picture bounding box}{south west}}%
+			{\pgfpointanchor{path picture bounding box}{north east}}%
+			\pgfgetlastxy\x\y%
+			\tikzset{x=\x/2,y=\y/2}%
+			#1
+		}
+	},
+	sin wave/.style={do path picture={    
+			\draw [line cap=round] (-3/4,0)
+			sin (-3/8,1/2) cos (0,0) sin (3/8,-1/2) cos (3/4,0);
+	}},
+	cross/.style={do path picture={    
+			\draw [line cap=round] (-1,-1) -- (1,1) (-1,1) -- (1,-1);
+	}},
+	plus/.style={do path picture={    
+			\draw [line cap=round] (-3/4,0) -- (3/4,0) (0,-3/4) -- (0,3/4);
+	}}
+}
+
+\begin{document}
+	\pagestyle{empty}
+	
+	% define colors
+	\definecolor{red_color}{RGB}{252,224,225}
+	\definecolor{yellow_color}{RGB}{242,243,193}
+	\definecolor{green_color}{RGB}{203,231,207}
+	\definecolor{lila_color}{RGB}{220,223,240}
+	
+	
+	% Define block styles
+	\tikzstyle{white_style} = [rectangle, draw,  
+	text width=10em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{lila_style} = [rectangle, draw, fill=lila_color, 
+	text width=10em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{green_style} = [rectangle, draw, fill=green_color, 
+	text width=10em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{red_style} = [rectangle, draw, fill=red_color, 
+	text width=10em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{yellow_style} = [rectangle, draw, fill=yellow_color, 
+	text width=10em, text centered, rounded corners, minimum height=4em]
+	
+	
+	\tikzstyle{line} = [draw, -latex']
+	
+	\begin{tikzpicture}[align=center,node distance = 2cm, auto]
+		% Place nodes
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\node[white_style, text width=5cm, anchor=south, align=center] (init) at (-1, 0) {Capa del Transformador};
+
+\node[white_style, text width=1cm, anchor=south, align=center] (Q) at (-3, -2) {Q};
+\node[white_style, text width=1cm, anchor=south, align=center] (K) at (-1, -2) {K};
+\node[white_style, text width=1cm, anchor=south, align=center] (V) at (1, -2) {V};
+
+\node [lila_style, text width=1cm, anchor=south, align=center] (s1) at (-3.25, -4) {};
+\node [lila_style, text width=1cm, anchor=south, align=center] (s1) at (-1.75, -4) {};
+\node [lila_style, text width=1cm, anchor=south, align=center] (s1) at (-0.25, -4) {};
+\node [lila_style, text width=1cm, anchor=south, align=center] (s1) at (1.25, -4) {};
+
+\draw[line width=0.046875cm, -latex] (-3, -0.58) -- (-3, 0);
+\draw[line width=0.046875cm, -latex] (-1, -0.58) -- (-1, 0);
+\draw[line width=0.046875cm, -latex] (1, -0.58) -- (1, 0);
+
+\draw[line width=0.046875cm, -latex] (-1, -2.58) -- (-1, -2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\node[white_style, text width=5cm, anchor=south, align=center] (init) at (5, 0) {Capa del Transformador};
+
+\node[white_style, text width=1cm, anchor=south, align=center] (Q) at (3, -2) {Q};
+\node[white_style, text width=1cm, anchor=south, align=center] (K) at (5, -2) {K};
+\node[white_style, text width=1cm, anchor=south, align=center] (V) at (7, -2) {V};
+
+\node [yellow_style, text width=1cm, anchor=south, align=center] (s1) at (2.75, -4) {};
+\node [yellow_style, text width=1cm, anchor=south, align=center] (s1) at (4.25, -4) {};
+\node [yellow_style, text width=1cm, anchor=south, align=center] (s1) at (5.75, -4) {};
+\node [yellow_style, text width=1cm, anchor=south, align=center] (s1) at (7.25, -4) {};
+
+\draw[line width=0.046875cm, -latex] (3, -0.58) -- (3, 0);
+\draw[line width=0.046875cm, -latex] (5, -0.58) -- (5, 0);
+\draw[line width=0.046875cm, -latex] (7, -0.58) -- (7, 0);
+
+\draw[line width=0.046875cm, -latex] (5, -2.58) -- (5, -2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+		\draw[line width=0.046875cm, -latex] (2, -4.58) -- (2, -4);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+		\node[white_style, text width=5cm, anchor=south, align=center] (init) at (2, -6) {Capa del Transformador};
+\node[white_style, text width=1cm, anchor=south, align=center] (Q) at (0, -8) {Q};
+\node[white_style, text width=1cm, anchor=south, align=center] (K) at (2, -8) {K};
+\node[white_style, text width=1cm, anchor=south, align=center] (V) at (4, -8) {V};
+
+\node [lila_style, text width=1cm, anchor=south, align=center] (s1) at (-3.25, -10) {};
+\node [lila_style, text width=1cm, anchor=south, align=center] (s1) at (-1.75, -10) {};
+\node [lila_style, text width=1cm, anchor=south, align=center] (s1) at (-0.25, -10) {};
+\node [lila_style, text width=1cm, anchor=south, align=center] (s1) at (1.25, -10) {};
+
+\node [yellow_style, text width=1cm, anchor=south, align=center] (s1) at (2.75, -10) {};
+\node [yellow_style, text width=1cm, anchor=south, align=center] (s1) at (4.25, -10) {};
+\node [yellow_style, text width=1cm, anchor=south, align=center] (s1) at (5.75, -10) {};
+\node [yellow_style, text width=1cm, anchor=south, align=center] (s1) at (7.25, -10) {};		
+
+\draw[line width=0.046875cm, -latex] (0, -6.58) -- (0, -6);
+\draw[line width=0.046875cm, -latex] (2, -6.58) -- (2, -6);
+\draw[line width=0.046875cm, -latex] (4, -6.58) -- (4, -6);
+
+\draw[line width=0.046875cm, -latex] (2, -8.58) -- (2, -8);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		
+		%\node [circle, draw, plus]  at ( 2, -4.3) {};
+		
+%		\node [scale_style, above of=matmul1, node distance=2cm] (scale1) {Scale};	
+%		\node [mask_style, above of=scale1, node distance=2cm] (mask1) {Mask (opt)};	
+%		\node [softmax_style, above of=mask1, node distance=2cm] (soft1) {Softmax};	
+%		\node[right of=soft1, xshift=-0.5cm] (prev_last) {};
+%		\node [matmul_style, above of=prev_last, node distance=2cm] (matmul1) {MatMul};				
+
+
+
+		
+%		\draw[line width=0.046875cm, -latex] (1, 2.4) -- (1, 2.9);
+%		\draw[line width=0.046875cm, -latex] (1, 4.4) -- (1, 4.9);
+%		\draw[line width=0.046875cm, -latex] (1, 6.4) -- (1, 6.9);
+%		\draw[line width=0.046875cm, -latex] (1, 8.4) -- (1, 8.9);
+		
+%		\draw[line width=0.046875cm, -latex] (2.5, 10.4) -- (2.5, 10.9);		
+		
+		
+	\end{tikzpicture}
+\end{document}

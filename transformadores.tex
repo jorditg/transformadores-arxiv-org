@@ -1,0 +1,1341 @@
+\documentclass{article}
+
+\usepackage{arxiv}
+\usepackage[latin1]{inputenc} %Accentos
+\usepackage[spanish,english,es-nolists]{babel} %Castellano
+\usepackage[T1]{fontenc}
+
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{subfigure}
+
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsmath}
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{cleveref}       % smart cross-referencing
+\usepackage{lipsum}         % Can be removed after putting your text content
+\usepackage{graphicx}
+\usepackage[numbers]{natbib} % numbers for arxiv
+\usepackage{doi}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\title{Transformadores: \\ Fundamentos teóricos y Aplicaciones}
+
+% Here you can change the date presented in the paper title
+%\date{September 9, 1985}
+% Or remove it
+%\date{}
+
+\author{ \href{https://orcid.org/0000-0002-8142-7983}{\includegraphics[scale=0.06]{orcid.pdf}\hspace{1mm}Jordi de la Torre}\thanks{mailto:jordi.delatorre@gmail.com web:jorditg.github.io} \\
+	Ph.D. in Computer Science (ML/AI)\\
+	Universitat Oberta de Catalunya\\
+	Barcelona, ES \\
+	\texttt{jordi.delatorre@gmail.com} \\
+	%% \AND
+	%% Coauthor \\
+	%% Affiliation \\
+	%% Address \\
+	%% \texttt{email} \\
+	%% \And
+	%% Coauthor \\
+	%% Affiliation \\
+	%% Address \\
+	%% \texttt{email} \\
+	%% \And
+	%% Coauthor \\
+	%% Affiliation \\
+	%% Address \\
+	%% \texttt{email} \\
+}
+
+% Uncomment to override  the `A preprint' in the header
+\renewcommand{\headeright}{Survey}
+\renewcommand{\undertitle}{Survey}
+\renewcommand{\shorttitle}{Transformadores: Fundamentos Teóricos y Aplicaciones}
+
+%%% Add PDF metadata to help others organize their library
+%%% Once the PDF is generated, you can check the metadata with
+%%% $ pdfinfo template.pdf
+\hypersetup{
+pdftitle={Transformadores: Fundamentos teóricos y Aplicaciones},
+pdfsubject={CS.AI},
+pdfauthor={Jordi de la Torre},
+pdfkeywords={Aprendizaje profundo, Transformadores},
+}
+
+\begin{document}
+\maketitle
+
+\selectlanguage{spanish} 
+
+\begin{abstract}
+
+Los Transformadores son una arquitectura de red neuronal diseñada originalmente para la transformación de datos para el procesamiento del lenguaje natural que se ha convertido en la herramienta principal para resolver una amplia variedad de problemas, incluyendo el procesamiento del lenguaje natural, sonido, imagen, aprendizaje por refuerzo, y otros problemas con datos de entrada heterogéneos. Su característica distintiva es su sistema de auto-atención, basado en la atención a la propia secuencia, que deriva del sistema de atención introducido en los años anteriores en distintas publicaciones. Este artículo proporciona al lector el contexto necesario para comprender los artículos de investigación más recientes y presenta los fundamentos matemáticos y algorítmicos de los elementos integrantes de este tipo de redes. También se estudian los distintos componentes que conforman esta arquitectura y las variaciones que pueden existir, así como algunas aplicaciones de los modelos de transformadores. Este artículo está en español para facilitar la llegada de este conocimiento científico a la comunidad hispanohablante.
+
+\end{abstract}
+
+\selectlanguage{english}
+\begin{abstract}
+	Transformers are a neural network architecture originally designed for natural language processing that it is now a mainstream tool for solving a wide variety of problems, including natural language processing, sound, image, reinforcement learning, and other problems with heterogeneous input data. Its distinctive feature is its self-attention system, based on attention to one's own sequence, which derives from the previously introduced attention system. This article provides the reader with the necessary context to understand the most recent research articles and presents the mathematical and algorithmic foundations of the elements that make up this type of network. The different components that make up this architecture and the variations that may exist are also studied, as well as some applications of the transformer models. This article is in Spanish to bring this scientific knowledge to the Spanish-speaking community.
+	
+\end{abstract}
+
+\selectlanguage{spanish} 
+
+
+% keywords can be removed
+\keywords{transformadores \and aprendizaje profundo \and redes neuronales \and inteligencia artificial \and machine learning}
+
+\newpage
+
+\section{Introducción}
+
+Las redes neuronales completamente conectadas son consideradas desde hace décadas aproximadores universales. En 1989, Hornik et al. demostraron que una red con una sola capa oculta y un número suficiente de nodos puede aproximar cualquier función continua con la precisión deseada \cite{hornik1989multilayer}.
+
+A pesar de esta realidad teórica, en la práctica puede ser difícil encontrar el número adecuado de nodos y los valores de los pesos necesarios para lograr la aproximación deseada.
+
+Para facilitar el proceso de optimización, se han utilizado priores estructurales que restringen el espacio de optimización a un subconjunto más limitado de los valores esperados. Por ejemplo, las redes convolucionales explotan las regularidades estadísticas que suelen estar próximas en una imagen, mientras que las redes recurrentes se especializan en el procesamiento de datos secuenciales, aprovechando las regularidades temporales. Estas arquitecturas, por tanto, están diseñadas para sacar provecho de las regularidades espaciales y temporales presentes en las señales sensoriales de nuestro mundo \cite{ioannou2018structural}.
+
+Sin embargo, estas optimizaciones computacionales también pueden ser una desventaja en algunos casos. Las redes neuronales recurrentes pueden tener problemas para resolver dependencias de largo alcance debido a limitaciones en la memoria interna y dificultades con la propagación de gradientes a través de una larga secuencia, lo que puede provocar un rendimiento insatisfactorio.
+
+Como una solución para abordar estas limitaciones, surgieron los modelos basados en mecanismos de atención, permitiendo ajustar la relevancia de los atributos.
+
+\section{Evolución histórica de los mecanismos de atención}
+
+El objetivo de esta sección no es realizar una presentación exhaustiva de todas las modalidades de mecanismos de atención existentes,  pero sí introducir el concepto y para posteriomente presentar la evolución que posteriormente dió lugar al sistema de \textit{auto-atención} utilizado en los tranformadores.
+
+En esta sección no se pretende hacer una exposición exhaustiva de todos los mecanismos de atención existentes, sino más bien introducir el concepto y presentar la evolución que llevó al sistema de "auto-atención", base de diseño de los transformadores. Dicha arquitectura es de gran importancia y se asemeja a la propuesta de invenciones anteriores como las redes convolucionales y las redes recurrentes LSTM. Se trata de una arquitectura generalista que permite tratar e integrar datos de diferentes tipos de forma elegante en la predicción.
+
+El hito más importante de la clase de redes neuronales basadas en mecanismos de atención ha sido la eliminación de la necesidad de la recurrencia para el tratamiento de datos secuenciales, sustituyendo la representación de las dependencias de un estado interno de la máquina a un método de atender en paralelo a las partes relevantes del conjunto de la secuencia. Básicamente convertir la dependencia temporal en una espacial, codificando la temporalidad como una parte adicional de la entrada.
+
+La evolución histórica de las ideas que llevaron al estado del arte actual en lo referente a atención, empieza alrededor de 2014. El interés por dotar de elementos explicativos a los modelos predictivos, llevó al diseño de sistemas basados en atención como modo de identificar los objetos presentes en imágenes que tenían más importancia para la realización de las predicciones de la red neuronal. En 2015 se propone la utilización de estos mecanismos en una aplicación de procesamiento del lenguaje natural (NLP), concretamente para la traducción de texto \cite{bahdanau2014neural}. Hasta ese momento se habían utilizado arquitecturas codificador-decodificador en las que la primera parte de la red se encargaba de codificar en un vector interno la frase de entrada en el idioma original y a continuación el decodificador la traducía al lenguaje objetivo. Los autores de esta nueva propuesta conjeturaron y demostraron experimentalmente que la utilización de información de los estados internos del codificador, y no únicamente del vector interno final, mejoraba los resultados de rendimiento. 
+
+A partir de esa primera propuesta se genera una nueva corriente de investigación en ese sentido, que lleva a que en 2017 se presente un artículo que cambió definitivamente el paradigma de diseño hacia una nueva arquitectura. En el artículo Attention is all you need. \cite{vaswani2017attention}, se presenta una propuesta radical en la que se elimina totalmente la recurrencia, para diseñar una red formada por la combinación de módulos de \textit{auto-atención}, normalización y capas completamente conectadas, denominada por los autores red de \textit{transformadores}, consiguiendo resultados al nivel del estado del arte, eliminando las complejidades asociadas al entrenamiento de las redes neuronales recurrentes.
+
+Desde su presentación en 2017, las redes de transformadores han seguido siendo objeto de intensa investigación y desarrollo en una amplia variedad de aplicaciones, incluyendo el procesamiento del lenguaje natural, la visión por computador, el control de sistemas, y más. Este enfoque ha revolucionado no solo el campo del procesamiento del lenguaje natural - que históricamente ha sido uno de los más desafiantes para el aprendizaje profundo - sino también el procesamiento de otras señales, como las imágenes, que hasta ahora eran dominio exclusivo de las redes neuronales convolucionales.
+
+\section{Retos que plantea la arquitectura de las redes neuronales recurrentes}
+
+Las redes recurrentes surgieron para tratar con datos secuenciales, permitiendo la entrada en el orden de la secuencia y adaptándose a sus características. Estas redes pueden mantener un estado interno que refleja las dependencias de corto, medio o largo alcance en la entrada. El objetivo es que la red recuerde y establezca relaciones entre estas dependencias para predecir salidas futuras.
+
+Este tipo de redes se utilizan como módulo dentro de modelos para abordar problemas de los siguientes tipos:
+
+\begin{enumerate}
+	\item \textbf{Modelos vector-secuencia:} A partir de un vector de tamaño fijo de entrada se genera una secuencia de dimensión arbitraria. Un ejemplo sería el etiquetado de imágenes, donde la entrada es una imagen y la salida un texto explicativo.
+	\item \textbf{Modelos secuencia-vector:} La entrada es un vector de dimensión arbitraria y la salida uno de dimensión fija. Un ejemplo sería el análisis de sentimiento, donde a partir de una secuencia de entrada de dimensión variable se genera un valor binario que indica si el sentimiento de esa secuencia es positivo o negativo.
+	\item \textbf{Modelos secuencia-secuencia:} Tanto la entrada como la salida son secuencias de dimensión variable. Un ejemplo sería por ejemplo la traducción de un texto desde un idioma a otro distinto.
+\end{enumerate}
+
+
+La práctica ha demostrado que las arquitecturas basadas en redes neuronales recurrentes, diseñadas para resolver los problemas arriba mencionados, no solo requieren más épocas de entrenamiento que las redes convolucionales, sino que también presentan diversos inconvenientes. Estos están relacionados con la alta profundidad de las redes implementadas, que conlleva problemas para resolver las dependencias de largo alcance, la explosión y cancelación de gradientes, así como dificultades para la paralelización del cómputo.
+
+Si bien arquitecturas como las LSTM \cite{hochreiter1997long} supusieron un avance muy significativo para la incorporación de dependencias de largo alcance, estas siguen presentando algunos problemas con las dependencias de muy largo alcance. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.5\textwidth]{figs/LSTM3-chain.pdf}
+	\label{fig:lstm}
+	\caption{Diagrama básico representativo de una red recurrente con celdas LSTM.}
+\end{figure}
+
+El desplegamiento de las redes que es necesario realizar durante el entrenamiento, suele incrementar las probabilidades de explosión y cancelación de gradientes, con los subsecuentes efectos sobre la optimización. 
+
+Cuando las secuencias de entrada son largas, es necesario desplegar la red en toda su extensión para calcular los gradientes asociados al tratamiento de cadena. Esto incide, no únicamente en el punto anterior (gradientes), sino también en las necesidades de recursos computacionales requeridos para tu tratamiento (tiempo y espacio).
+
+\section{Arquitectura de los Transformadores}
+
+La arquitectura de los transformadores fue creada para superar los desafíos de las redes recurrentes mencionados anteriormente, eliminando la recurrencia y procesando todos los elementos de la secuencia simultáneamente. Gracias a los mecanismos de atención, los elementos distantes pueden conectarse directamente, lo que minimiza los problemas con los gradientes. Además, los transformadores resuelven el problema de la profundidad de la red utilizando los mismos mecanismos introducidos en \cite{he2016deep}, ya que también son redes residuales. Por otro lado, el entrenamiento, en la práctica, demuestra requerir menos épocas y, para cada una de ellas, el tratamiento en paralelo de la computación es mucho más sencillo de implementar.
+
+\subsection{El mecanismo de auto-atención}
+
+El mecanismo de auto-atención es el núcleo fundamental y distintivo de la arquitectura de los transformadores. Comprender su funcionamiento es clave para adentrarse en las especificidades de la arquitectura. 
+
+\subsubsection{Definición formal}
+
+Sea $\mathbf{X}$ una secuencia de entrada formada por $\ell_\mathcal{X}$ elementos, cada uno de ellos de dimensión $d_e$, $\mathbf{X}\in  \mathbb{R}^{d_e \times \ell_\mathcal{X}}$. Sea $\mathbf{Z}$ una secuencia de denominada de contexto formada por $\ell_\mathcal{Z}$ elementos, cada uno de ellos de dimensión $d_e$, $\mathbf{Z}\in  \mathbb{R}^{d_e \times \ell_\mathcal{Z}}$. 
+
+
+Sean ($\mathbf{W_q} \in \mathbb{R}^{d_{attn} \times d_\mathcal{X}}$, $\mathbf{b_q} \in \mathbb{R}^{d_{attn}}$), ($\mathbf{W_k} \in \mathbb{R}^{d_{attn} \times d_\mathcal{Z}}$, $\mathbf{b_k} \in \mathbb{R}^{d_{attn}}$) y ($\mathbf{W_v} \in \mathbb{R}^{d_{out} \times d_\mathcal{Z}}$, $\mathbf{b_v} \in \mathbb{R}^{d_{out}}$) tres pares de matriz-vector representativos de tres transformaciones lineales aplicables a la secuencia de entrada $\mathbf{X}$ y a la secuencia de contexto $\mathbf{Z}$. 
+
+Sean $\mathbf{Q}$, $\mathbf{K}$ y $\mathbf{V}$ las matrices obtenidas después de aplicar las transformaciones lineales referidas, donde $\mathbf{Q} = \mathbf{W_q} \mathbf{X} + \mathbf{b_q} \mathbf{1}^T \in \mathbb{R}^{d_{attn} \times \ell_\mathcal{X}}$, $\mathbf{K} = \mathbf{W_k}\mathbf{Z} + \mathbf{b_k} \in \mathbb{R}^{d_{attn} \times \ell_\mathcal{Z}}$ y $\mathbf{V} = \mathbf{W_v}\mathbf{Z} + \mathbf{b_v} \in \mathbb{R}^{d_{out} \times d_\mathcal{Z}}$.
+
+Sea $\mathbf{S}$ la función de \textit{similaridad}, definida en este caso como $\mathbf{S} = \frac{1}{\sqrt{d_{attn}}}\mathbf{K}^T \mathbf{Q} \in \mathbb{R}^{\ell_\mathcal{Z} \times \ell_\mathcal{X}}$.
+
+Entonces, la ecuación de atención de la secuencia de entrada $\mathbf{X}$ sobre la secuencia de contexto $\mathbf{Z}$ se puede expresar como:
+
+\begin{equation}
+	\begin{array}{lrr} \tilde{\mathbf{V}} = \mathbf{V} \cdot \text{softmax} ( \mathbf{S} ) & \text{donde} & \tilde{\mathbf{V}} \in \mathbb{R}^{d_{out} \times \ell_\mathcal{X}} \end{array}
+	\label{eq:self-attention}
+\end{equation}
+
+
+La función $softmax$ refiere a la aplicación de la función de normalización softmax por cada fila de la matriz. Por lo tanto, cada elemento de la matriz depende de todos los otros elementos pertenecientes a la misma fila.
+
+Cuando secuencia de entrada y contexto coinciden, esto es $\mathbf{X} = \mathbf{Z}$ entonces hablamos de atención a la propia secuencia o, más breve, auto-atención.
+
+El algoritmo \ref{alg:position-single-attention} muestra en versión algorítmica como se calcula la auto-atención.
+
+\begin{algorithm}
+	\caption{Esquema básico de atención con una única consulta (versión secuencial)}
+	\label{alg:position-single-attention}	
+	\begin{algorithmic}
+		\State
+		\State \textbf{Entrada:} $\textbf{e} \in \mathbb{R}^{d_{in}}$, la representación token de entrada actual
+		\State \textbf{Entrada:} $\textbf{e}_t \in \mathbb{R}^{d_{in}}$, representación vectorial de los tokens de contexto $t \in [T]$
+		\State \textbf{Salida:} $\tilde{v} \in \mathbb{R}^{d_{out}}$, representación vectorial de la combinación de token y contexto.
+		\State \textbf{Parámetros:} $\textbf{W}_q, \textbf{W}_k \in \mathbb{R}^{d_{attn} \times d_{in}}, \textbf{b}_q, \textbf{b}_k \in \mathbb{R}^{d_{attn}}$, parámetros de proyección lineal de consulta y clave.
+		\State	\textbf{Parámetros:} $\textbf{W}_v \in \mathbb{R}^{d_{out} \times d_{in}}, \textbf{b}_v \in \mathbb{R}^{d_{out}}$ parám. de proy. lineal
+		\begin{tabular}{ l l}
+			\textbf{1)} & $\textbf{q} \leftarrow \textbf{W}_q\textbf{e} + \textbf{b}_q$\\
+			\textbf{2)} & $\forall t: \textbf{k}_t \leftarrow \textbf{W}_k\textbf{e}_t + \textbf{b}_k$\\
+			\textbf{3)} & $\forall t: \textbf{v}_t \leftarrow \textbf{W}_v\textbf{e}_t + \textbf{b}_v$\\
+			\textbf{4)} & $\forall t: \alpha_t \leftarrow \frac{\exp{(q^T k_t / \sqrt{d_{attn}})}}{\sum_u \exp{(q^T k_u / \sqrt{d_{attn}})}}$\\
+			\textbf{5)} & \textbf{return} $\tilde{\textbf{v}} = \sum_{t=1}^T \alpha_t \textbf{v}_t$\\
+			
+		\end{tabular}
+	\end{algorithmic}
+\end{algorithm}
+
+Como se indica en la versión algorítmica presentada en \ref{alg:position-single-attention}, éste cálculo se realiza para todos los elementos de la secuencia. Con el objetivo de optimizar en tiempo la computación, es de interés paralelizar la computación en la medida de lo posible. Una forma de hacerlo es mediante la configuración matricial del algoritmo. En la figura \ref{fig:atencion} se muestra mediante diagrama de bloques las operaciones matriciales necesarias para llevar a cabo el proceso. El módulo \textit{Máscara}, que se muestra en el diagrama y se marca como opcional, es una operación que, de ser necesario, permite anular el efecto de parte de las secuencias. El algoritmo \ref{alg:position-masked-attention} es la versión matricial alternativa al algoritmo  \ref{alg:position-single-attention} que permite explotar las posibilidades de cálculo en paralelo y, por tanto, acelerar la computación.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.3\textwidth]{figs/self-attention2.pdf}
+	\label{fig:atencion}
+	\caption{Diagrama de bloques representativo de las operaciones matriciales involucradas en los cálculos de la atención}	
+\end{figure}
+
+La operación de enmascarado permite el diseño de estrategias de entrenamiento alternativas para resolver problemas distintos utilizando la misma arquitectura. El sistema de \textit{auto-atención sin máscara} trata a toda la secuencia como contexto $\textit{Z} = \textit{X}$, $(Mask \equiv 1)$ dando lugar a transformadores con contextos bidireccionales. Aplicando máscaras a los elementos de la secuencia situados a uno de los lados, tenemos los transformadores de contexto unidireccional mientras que en aquellos en los que tenemos dos secuencias de entrada, es posible aplicar la secuencia cruzada enmascarando los elementos de una de las secuencias de entrada usando como contexto a la otra.
+
+
+\begin{algorithm}[H]
+	\caption{$\hat{\textbf{V}} \leftarrow atencion(\textbf{X}, \textbf{Z} | \textbf{W}_{qkv}, Mask)$ (versión matricial)} 
+	\begin{algorithmic}
+		\State /* Calcula un (único) cabezal de atención con máscara */
+		\State \textbf{Entrada:} \textbf{Entrada:} $\textbf{X} \in \mathbb{R}^{d_{X} \times \ell_X}$ y $\textbf{Z} \in \mathbb{R}^{d_{Z} \times \ell_Z}$, representaciones vectoriales de las secuencias principal y de contexto
+		\State \textbf{Salida:} $\tilde{\textbf{V}} \in \mathbb{R}^{d_{out} \times \ell_X}$, representación vectorial actualizada de $\textbf{X}$, recogiendo la información de la secuencia $\textbf{Z}$
+		\State \textbf{Parámetros:} $\textbf{W}_{qkv}$, consistente en: $\textbf{W}_{q} \in \mathbb{R}^{d_{attn} \times d_{X}}$, $\textbf{b}_q \in \mathbb{R}^{d_{attn}}$; $\textbf{W}_k \in \mathbb{R}^{d_{attn} \times d_{Z}}$, $\textbf{b}_k \in \mathbb{R}^{d_{attn}}$; $\textbf{W}_v \in \mathbb{R}^{d_{out} \times d_{Z}}$, $\textbf{b}_v \in \mathbb{R}^{d_{out}}$.
+		\State	\textbf{Hiperparámetros:} $Mask \in \{0,1\}^{\ell_Z \times \ell_X}$
+		\State
+		\begin{tabular}{ l l r}
+			\textbf{1)} & $\textbf{Q} \leftarrow \textbf{W}_q\textbf{X} + \textbf{b}_q \textbf{1}^T$&[[\textbf{Q}uery $\in \mathbb{R}^{d_{attn} \times \ell_X}$]]\\
+			\textbf{2)} & $\textbf{K} \leftarrow \textbf{W}_k\textbf{Z} + \textbf{b}_k \textbf{1}^T$&[[\textbf{K}ey $\in \mathbb{R}^{d_{attn} \times \ell_Z}$]]\\
+			\textbf{3)} & $\textbf{V} \leftarrow \textbf{W}_v\textbf{Z} + \textbf{b}_v \textbf{1}^T$&[[\textbf{V}alue $\in \mathbb{R}^{d_{out} \times \ell_Z}$]]\\
+			\textbf{4)} & $\textbf{S} \leftarrow \textbf{K}^T \textbf{Q}$&[[\textbf{S}core $\in \mathbb{R}^{\ell_{Z} \times \ell_X}$]]\\
+			\textbf{5)} & $\forall t_z, t_x$, if $\neg Mask[t_z, t_x]$ then $S[t_z,t_x] \leftarrow - \infty $\\
+			\textbf{6)} & \textbf{return} $\hat{\textbf{V}} = \textbf{V} \cdot softmax(S/\sqrt{d_{attn}})$
+			
+		\end{tabular}
+	\end{algorithmic}
+	\label{alg:position-masked-attention}
+\end{algorithm}
+
+Informalmente, el transformador utiliza una serie de características de la secuencia de entrada para realizar una combinación ponderada de ellas basándose en su similitud. Los pesos asignados a cada característica se calculan a partir de la similitud entre los pares de características de entrada. Este proceso se repite varias veces con los datos de la capa anterior. En la primera capa, se comparan los pares de características, y en las siguientes capas se comparan pares de pares, y así sucesivamente. A medida que se profundiza en la red, el número de características combinadas aumenta exponencialmente, lo que permite obtener diferentes formas de combinación de todas las características de la secuencia en las capas finales.
+
+\subsubsection{Analogía con las bases de datos}
+
+Los nombres originales utilizados para definir las transformaciones lineales usadas en el cálculo de la auto-atención hacen referencia a una analogía conceptual con las consultas propias de las bases de datos relacionales. 
+
+En una base de datos tenemos consultas (queries, Q), claves (keys, K) y valores (values, V). Al realizar un consulta Q sobre un conjunto de claves $K_1$, $K_2$, ... $K_N$, la base de datos reporta como resultado una serie de valores $V_1$, $V_2$, ... $V_N$. 
+
+El mecanismo de atención de los transformadores viene a ser una versión probabilística de este proceso. Una función de similaridad compara la clave Q con cada una de las claves K. El resultado es un vector que puede ser interpretado como la similaridad de la consulta Q con cada una de las claves K. Esta valor sirve posteriormente para calcular un peso que se utiliza a continuación para calcular el valor final, como una combinación lineal de los valores de entrada. La función de similaridad puede ser definida de distintos modos (ver ecuación \ref{eq:similaridad}). Es una decisión de diseño el escoger una u otra. Como hemos observado en las ecuaciones y algoritmos presentados en el apartado anterior, los transformadores que estudiaremos utilizan como función de similaridad el producto escalar escalado.
+
+\begin{equation}
+	s_i = f(Q, K_i)=
+	\begin{cases}
+		Q^T K_i & \text{producto escalar}\\
+		\frac{Q^T K_i}{d} & \text{producto escalar escalado}\\
+		Q^T W K_i & \text{producto escalar general}\\
+		W^T_Q + W^T_K K_i & \text{similaridad aditiva}\\
+		\text{otros} & \text{kernels, etc.}
+	\end{cases}
+	\label{eq:similaridad}
+\end{equation}
+
+Calculada la similaridad, obtenemos para una consulta concreta Q, una valor por clave, esto es, un vector de dimensión igual al número de claves. Valores altos de similaridad indican un alto grado de coincidencia. Por tanto, como la intención es crear una función de búsqueda probabilística, se utiliza ese valor para calcular la probabilidad de coincidencia aplicando una función softmax (ver ecuación \ref{eq:probabilidad}), obteniendo como resultado una probabilidad del valor de la posición i para pareja consulta-clave determinada. 
+
+\begin{equation}
+	\omega_i = \frac{\exp{(s_i)}}{\sum_j \exp(s_j)} 
+	\label{eq:probabilidad}
+\end{equation}
+
+Finalmente, se obtendrá un conjunto de valores como combinación lineal de los valores fuente y el peso de cada uno de ellos en la comparación entre consulta-clave (ver ecuación \ref{eq:atencion}).
+
+\begin{equation}
+	A = \sum{\omega_i V_i} 
+	\label{eq:atencion}
+\end{equation}
+
+\subsubsection{Auto-atención múltiple}
+
+El mecanismo que hemos descrito en las secciones anteriores permite realizar una transformación utilizando el súper-conjunto ($\boldsymbol{Q}$, $\boldsymbol{K}$, $\boldsymbol{V}$) desde el espacio inicial $\mathbb{R}^{n \times d}$ para obtener como resultado un valor perteneciente al espacio $\mathbb{R}^{n \times d_v}$.
+
+Una forma de ampliar las capacidades del sistema es aplicar varias transformaciones en paralelo del mismo tipo, pero con súper-conjuntos ($\boldsymbol{Q}$, $\boldsymbol{K}$, $\boldsymbol{V}$) distintos. Cada uno de ellos reportando un valor distinto situado en el espacio $\mathbb{R}^{n \times d_v}$. 
+
+En la ecuación \ref{eq:atencion-multiple} se muestra la ecuación utilizada para calcular la atención múltiple.
+
+\begin{equation}
+	\boldsymbol{M} = \text{Concat}^{h}_{i=1} \left[ \boldsymbol{D_i} \left( \boldsymbol{Q_i},\boldsymbol{K_i},\boldsymbol{V_i} \right) \right] \boldsymbol{W_O}
+	\label{eq:atencion-multiple}
+\end{equation}
+
+Si el número de bloques de atención paralelos $n$ se escoge de forma tal que $n = \frac{d}{d_v}$ entonces las dimensiones del espacio de salida serán iguales a las del espacio de entrada $\mathbb{R}^{n \times d}$. $\boldsymbol{W_O}$ es una matriz que realiza una transformación lineal posterior a la concatenación y permitiría eventualmente la modificación de las dimensiones del espacio de salida, en caso de que en el diseño pudiera ser de interés.
+
+La utilización del mecanismo de atención múltiple permite aplicar simultáneamente diferentes transformaciones a los pares de atributos de entrada, lo que aumenta tanto la diversidad como la complejidad de las comparaciones. Además, permite mantener la dimensión del espacio de trabajo, lo que puede resultar útil en arquitecturas que emplean bloques de la misma naturaleza apilados unos sobre otros.
+
+El algoritmo \ref{alg:multi-head-attention} muestra la versión algorítmica del proceso.
+
+\begin{algorithm}[H]
+	\caption{$\hat{\boldsymbol{V}} \leftarrow atencion\_multicabezal(\boldsymbol{X}, \boldsymbol{Z} | \boldsymbol{W_{qkv}}, Mask)$ (versión matricial)} 
+	\begin{algorithmic}
+		\State /* Calcula la atención multi-cabezal (con máscara) */
+		\State \textbf{Entrada:} $\boldsymbol{X} \in \mathbb{R}^{d_{X} \times \ell_X}$ y $\boldsymbol{Z} \in \mathbb{R}^{d_{Z} \times \ell_Z}$, representaciones vectoriales de las secuencias principal y de contexto
+		\State \textbf{Salida:} $\tilde{\boldsymbol{V}} \in \mathbb{R}^{d_{out} \times \ell_X}$, representación vectorial actualizada de $\boldsymbol{X}$, recogiendo la información de la secuencia $\boldsymbol{Z}$
+		\State \textbf{Parámetros:} $\boldsymbol{W_{qkv}}$, consistente en: $\boldsymbol{W_{q}} \in \mathbb{R}^{d_{attn} \times d_{X}}$, $\boldsymbol{b_q} \in \mathbb{R}^{d_{attn}}$; $\boldsymbol{W_k} \in \mathbb{R}^{d_{attn} \times d_{Z}}$, $\boldsymbol{b_k} \in \mathbb{R}^{d_{attn}}$; $\boldsymbol{W_v} \in \mathbb{R}^{d_{out} \times d_{Z}}$, $\boldsymbol{b_v} \in \mathbb{R}^{d_{out}}$.
+		\State	\textbf{Hiperparámetros:} $Mask \in \{0,1\}^{\ell_Z \times \ell_X}$
+		\State
+		\begin{tabular}{ l l}
+			\textbf{1)} & Para $h \in [H]$:\\
+			\textbf{2)} & $\boldsymbol{Y^h} \leftarrow atencion(\boldsymbol{X}, \boldsymbol{Z} | \boldsymbol{W_{qkv}^h}, Mask)$\\
+			\textbf{3)} & $\boldsymbol{Y^h} \leftarrow [\boldsymbol{Y^1}; \boldsymbol{Y^2}; ...; \boldsymbol{Y^H}]$\\
+			\textbf{4)} & return $\hat{\boldsymbol{V}} = \boldsymbol{W_o} \boldsymbol{Y} + \boldsymbol{b_o} \boldsymbol{1}^T$\\			
+		\end{tabular}
+	\end{algorithmic}
+	\label{alg:multi-head-attention}
+\end{algorithm}
+
+\subsection{Transformadores}
+
+Llegados a este punto estamos en condiciones de presentar la arquitectura del \textit{transformador}. Como ya hemos indicado con anterioridad, este nuevo paradigma de diseño de red neuronal se introdujo con la publicación de \cite{vaswani2017attention} y se planteó para su aplicación en sistemas de traducción automática.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figs/transformer.pdf}
+	\label{fig:transformador}
+	% \vspace{-5pt}\peufigura{Fuente: \url{http://www.ibmbigdatahub.com/infographic/four-vs-big-data}}
+	\caption{Arquitectura del Transformador introducida en ``Attention is all you need'' \cite{vaswani2017attention}}
+\end{figure}
+
+En la figura \ref{fig:transformador} se muestra el diagrama de los bloques integrantes de la red de transformadores tal como fue publicado por primera vez en \cite{vaswani2017attention}. Cada elemento de la secuencia de entrada se convierte en una representación numérica (\textit{input embedding}) para posteriormente combinarse (suma en este caso) con una función que codifica la posición del elemento en la secuencia (\textit{positional encoding}). Este valor sirve de entrada a una pila de N bloques denominados \textit{codificadores}. Los atributos fruto de la codificación serán una de las entradas que alimentarán a la red de \textit{decodificadores}. El objetivo de esta red es predecir la siguiente palabra y, para ello, utiliza no únicamente la información procedente de cadena de la entrada a través del codificador, sino también todos los elementos de la cadena de salida producidos hasta el momento. 
+
+En las secciones siguientes vamos a describir con detalle cada una de las partes integrantes de la arquitectura, agrupándolos en sus elementos constitutivos de mayor nivel.
+
+\subsubsection{Notación}
+
+Sea $V$ un conjunto finito denominado \textit{vocabulario}, denotado como $[N_V] := \lbrace 1,...,N_V \rbrace$. Puede estar formado por letras o palabras completas, aunque típicamente está formado por partes constituyentes de palabras denominadas \textit{tokens}. 
+
+Sea $ \mathbf{x} \equiv x[1 : \ell] \equiv x[1]x[2]...x[\ell] \in V^*$ una secuencia de \textit{tokens}, por ejemplo una frase, un parágrafo o un documento.
+
+Siguiendo la notación matemática y en contra de lo establecido en algunos lenguajes de programación como C o python, el primer índice de matrices y vectores utilizados en este módulo será el uno. $X[1:\ell]$, por ejemplo, refiere a la cadena de caracteres que va desde el primero hasta el elemento $\ell$ ambos incluidos. 
+
+Para una matriz $M \in \mathbb{R}^{d \times d'}$, escribimos $M[i,:] \in \mathbb{R}^{d'}$ para referirnos a la fila $i$ y $M[:,j] \in \mathbb{R}^{d}$ para la columna $j$.
+
+Usamos la convención matriz $\times$ columna más común en matemáticas en vez de fila $\times$ matriz más típica de la mayoría de la literatura de transformadores, esto es, las matrices están traspuestas.
+
+\subsubsection{Tratamiento de entrada}
+
+En la figura \ref{fig:capa-entrada} se muestra el proceso de tratamiento de entrada propio del transformador. El texto se alimenta a un \textit{tokenizador} la función del cual es particionar la secuencia en sus elementos constituyentes. Cada elemento es representado por un vector ortogonal que tiene un $1$ en la posición del diccionario identificativa del elemento y ceros en el resto. A continuación se realiza una transformación lineal para comprimir la representación inicial en un vector denso de dimensión menor. Finalmente, mediante un operador, que suele ser la suma (pero nada impide que pudiera ser por ejemplo la concatenación u otro distinto), se añade la información referente a la posición que ocupa el elemento dentro de la secuencia. La representación numérica de la secuencia ya está lista para ser alimentada a los bloques de procesamiento siguientes.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.3\textwidth]{figs/entrada-transformer-detail.pdf}
+	\label{fig:capa-entrada}
+	\caption{Figura \ref{fig:capa-entrada}. Esquema típico de las operaciones necesarias para convertir una entrada de texto a formato necesario para ser tratado por el transformador}
+\end{figure}
+
+La capa de entrada se encarga del preprocesamiento de los datos para adecuarlos a un formato que sea interpretable por el transformador. Los transformadores se diseñaron inicialmente como forma alternativa de tratamiento de los datos secuenciales. El primer paso para el tratamiento de este tipo de datos es la partición de la secuencia en sus elementos constitutivos. Este proceso es conocido habitualmente como \textit{tokenización}. Esta partición se puede hacer de muchos modos: a nivel de palabra, partes de palabra o bien carácteres. 
+
+En los diseño actuales de transformadores lo más habitual es utilizar particiones a nivel de partes de palabra. Muchas palabras están constituidas por distintos monemas (unidades mínimas de significado). Particionar a nivel de palabra tiene el inconveniente de que muchas de las unidades elementales de significado no se separan. Esto suele ser un inconveniente que dificulta el funcionamiento de modelos interpretativos del lenguaje. 
+
+De entrada se podría conjeturar que una separación a nivel de carácter permitiría al modelo reconstruir las unidades mínimas de significado. Los artículos publicados indican explícitamente, que los resultados prácticos, al menos hasta el momento, indican que la partición a nivel de carácter es demasiado agresiva, con resultados significativamente inferiores a los obtenidos utilizando particiones a nivel de partes de palabra. 
+
+Entre los particionadores más típicos utilizados con Transformadores tenemos \textit{BPE} (\textit{Byte Pair Encoding}) \cite{gage1994new-BPE}, \textit{Unigram} \cite{kudo2018subword-unigram} y \textit{WordPiece} \cite{devlin2018bert}. La diferencia existente entre estos se basa en la estrategia seguida para escoger los pares de caracteres a concatenar para elegir cada una de las subpalabras para formar el diccionario. 
+
+Cada modelo pre-entrenado está diseñado para ser usado con un diccionario específico derivado del particionador escogido.
+
+Para el caso de los transformadores para el tratamiento de imagen, la propuesta existente hasta el momento, consiste en particionar la imagen en trozos no superpuestos de dimensiones reducidas y alimentarlos secuencialmente. 
+
+Si bien la preparación de las entradas descritas son los modos actuales establecidos de hacerlo, no existe una razón para que esto pueda ser de otro modo. Por lo tanto, es posible que en el futuro puedan surgir maneras alternativas de codificar las entradas.
+
+\begin{algorithm}[H]
+	\caption{Embedding de un token}
+	\begin{algorithmic}
+		\State
+		\State \textbf{Entrada:} $v \in V \cong [N_V]$, identificador del token (p.e. one-hot)
+		\State \textbf{Salida:} $\textbf{e} \in \mathbb{R}^{d_e}$, la representación vectorial de un token
+		\State \textbf{Parámetros:} $\textbf{W}_e \in \mathbb{R}^{d_e \times N_V}$, la matriz de embedding
+		\State	\textbf{retorna: } $\textbf{e} = \textbf{W}_e[:,v]$
+	\end{algorithmic}
+	\label{alg:token-embedding}
+\end{algorithm}
+
+\begin{algorithm}[H]
+	\caption{Embedding de la posición}
+	\begin{algorithmic}
+		\State
+		\State \textbf{Entrada:} $\ell \in \ell_{max}$, posición del token dentro de la secuencia
+		\State \textbf{Salida:} $\boldsymbol{e_p} \in \mathbb{R}^{d_e}$, la representación vectorial de la posición
+		\State \textbf{Parámetros:} $\boldsymbol{W_p} \in \mathbb{R}^{d_e \times \ell_{max}}$, la matriz de embeddings de posición
+		\State	\textbf{retorna: } $\boldsymbol{e_p} = \boldsymbol{W_p}[:,\ell]$
+	\end{algorithmic}
+	\label{alg:position-embedding}
+\end{algorithm}
+
+\subsubsection{Codificadores}
+
+El codificador está integrado por un cabezal de auto-atención múltiple seguido de una red completamente conectada. Ambas capas forman parte de una red residual y, por lo tanto, integran a continuación de cada una de esas dos capas la suma de la entrada y su normalización. 
+
+En la figura \ref{fig:codificador} se muestra el diagrama de bloques de los elementos integrantes de un codificador. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.3\textwidth]{figs/encoder-transformer-detail.pdf}
+	\label{fig:codificador}
+	\caption{Esquema típico de los elementos integrantes de un codificador. La red de codificación integra varios de estos elementos en serie. La salida de uno sirve de entrada para el siguiente.}
+\end{figure}
+
+\subsubsection{Decodificadores}
+
+El decodificador es un bloque integrado por un cabezal de auto-atención múltiple que recibe como entradas los elementos de la cadena de salida de la red del transformador desplazados una posición. Para asegurar que la predicción se realiza usando únicamente la información precedente, pero no la posterior, integra una matriz de enmascarado que permite anular el efecto de los elementos posteriores de la cadena de salida. 
+
+A continuación de este primer bloque, existe un segundo que recibe como entrada la salida del primero así como la salida procedente de la codificación de la cadena de entrada. La salida de este bloque se alimenta a una capa completamente conectada. Todas estas etapas son también capas residuales y están seguidas de su correspondiente suma con la entrada y normalización. La red de decodificación apila en serie N elementos de este tipo. 
+
+En la figura \ref{fig:decodificador} se muestra el diagrama de bloques de los elementos integrantes de un decodificador. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.4\textwidth]{figs/decoder-transformer-detail.pdf}
+	\label{fig:decodificador}
+	\caption{Esquema típico de los elementos integrantes de un decodificador. La red de decodificación integra varios de estos elementos en serie. La salida de uno sirve de entrada para el siguiente. A todos ellos se alimenta la salida de la red de codificadores}
+\end{figure}
+
+\subsubsection{Tratamiento de salida}
+
+En la capa de salida es necesario realizar una conversión desde el espacio de representación interna hasta el de representación externa (ver figura \ref{fig:capa-salida}). Es la transformación inversa a la operación de \textit{embedding}, donde pasamos del vector representativo del diccionario a una representación interna. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.18\textwidth]{figs/salida-transformer-detail.pdf}
+	\label{fig:capa-salida}
+	\caption{Esquema típico de las operaciones necesarias para convertir la última capa oculta del transformador en una salida}
+\end{figure}
+
+
+Existen dos formas de llevar a cabo la conversión: la primera es tratar a la capa como independiente, realizando el aprendizaje de los pesos de conversión, mientras que la segunda es utilizar para la matriz inversa del \textit{embedding}, sin realizar un aprendizaje independiente.
+
+En \cite{vaswani2017attention} se utiliza la estrategia definida en \cite{press2016using} de ligar la transformación de la capa de entrada a la capa de salida. Uno de los pasos inciales para preparar las entradas, pasa por convertir la representación \textit{one-hot} de su posición en el diccionario, por una representación "densa" de las dimensiones del modelo. Este paso se hace mediante una transformación lineal que reduce las dimensiones desde las del diccionario a la interna de trabajo del modelo. La idea presentada en \cite{press2016using} y utilizada posteriormente en \cite{vaswani2017attention}, pasa por utilizar la misma matriz de transformación tanto para las entradas como para las salidas. Siendo esto así, el clasificador de salida pasa a ser una transformación lineal con los mismos pesos que la de la entrada. %Siendo esto así para muchas propuestas de transformadores, nada impide que pudiera también ser de otro modo.
+
+El algoritmo \ref{alg:unembedding} muestra la versión algorítmica del proceso.
+
+\begin{algorithm}[H]
+	\caption{Embedding inverso} 
+	\begin{algorithmic}
+		\State /* Convierte la representación interna de la red en un elemento */
+		\State \textbf{Entrada:} $\boldsymbol{e} \in \mathbb{R}^{d_{e}}$, representación interna de un elemento
+		\State \textbf{Salida:} $\boldsymbol{p} \in \Delta(V)$, vector que contiene la representación distribución de probabilidad sobre el conjunto de elementos integrantes del vocabulario 
+		
+		\State	\textbf{Parámetros:} $\boldsymbol{W_u} \in \mathbb{R}^{N_V \times d_{e}}$, matriz de embedding inversa
+		\State \textit{return} $\boldsymbol{p} = softmax(\boldsymbol{W_u e})$
+	\end{algorithmic}
+	\label{alg:unembedding}
+\end{algorithm}
+
+
+\subsubsection{Normalización de capas}
+
+Las capas de normalización están presentes como bloque constituyente tanto en los codificadores como en los decodificadores. Su finalidad es el control explícito de la media y la varianza de la activación de cada neurona.
+
+El algoritmo \ref{alg:layer-normalization} muestra de forma detallada el proceso que tiene lugar en dichas capas.
+
+\begin{algorithm}[H]
+	\caption{$\hat{\boldsymbol{e}} \leftarrow normalizacion\_de\_capa(\boldsymbol{e} | \boldsymbol{\gamma}, \boldsymbol{\beta})$} 
+	\begin{algorithmic}
+		\State /* Normaliza las activaciones $\boldsymbol{e}$ de la capa */
+		\State \textbf{Entrada:} $\boldsymbol{e} \in \mathbb{R}^{d_{e}}$, activaciones de entrada sin normalizar
+		\State \textbf{Salida:} $\hat{\boldsymbol{e}} \in \mathbb{R}^{d_{e}}$, activaciones normalizadas
+		
+		\State	\textbf{Parámetros:} $\boldsymbol{\gamma}, \boldsymbol{\beta} \in \mathbb{R}^{d_{e}}$, vector de escalado y desplazamiento
+		\State
+		\begin{tabular}{ l l}
+			\textbf{1)} & $\boldsymbol{m} \leftarrow \sum_{i=1}^{d_e} \boldsymbol{e}[i]/d_e$ \\
+			\textbf{2)} & $v \leftarrow \sum_{i=1}^{d_e} (\boldsymbol{e}[i] - \boldsymbol{m})^2 / d_e $ \\
+			\textbf{3)} & \textbf{return} $\hat{\boldsymbol{e}} = \frac{\boldsymbol{e}-\boldsymbol{m}}{\sqrt{v}} \odot \boldsymbol{\gamma} + \boldsymbol{\beta}$, donde $\odot$ denota multiplicación componente-componente\\			
+		\end{tabular}
+	\end{algorithmic}
+	\label{alg:layer-normalization}
+\end{algorithm}
+
+\section{Tipos de Transformadores}
+
+En la sección anterior se ha introducido la arquitectura del transformador mostrando el diagrama original introducido en \cite{vaswani2017attention}. Como ya hemos indicado con anterioridad, la propuesta inicial se hizo como medio alternativo de resolución de problemas de traducción de secuencia a secuencia y representa el primero de los tipos de modelos posibles de transformadores. En este apartado presentaremos modificaciones de la arquitectura original que surgieron posteriormente y que han dado lugar a subfamilias de transformadores especializadas en la resolución de problemas distintos. Actualmente podemos distinguir entre tres tipos de modelos o arquitecturas: los auto-regresivos, los de auto-codificación y los de conversión de secuencia-a-secuencia. 
+
+\subsection{Transformadores secuencia-a-secuencia}
+
+Los modelos de secuencia-a-secuencia utilizan dos unidades básicas de diseño denominadas codificadores y decodificadores. Su finalidad es la conversión de una secuencia de entrada en otra distinta. Sus aplicaciones principales están relacionadas con la traducción, resumen y respuesta a preguntas. El modelo original es un ejemplo de este tipo de aplicaciones. \textbf{T5} \cite{raffel2020exploring} sería un ejemplo presentado después del artículo general de la misma arquitectura usada para resolver otro tipo de tareas más específicas.
+
+El algoritmo \ref{alg:codificadores-decodificadores} recoge los detalles de implementación de lo que sería un transformador de secuencia-a-secuencia.
+
+
+\begin{algorithm}[H]
+	\caption{$\boldsymbol{P} \leftarrow transformadorCD(\boldsymbol{x} \mid \boldsymbol{\theta})$}
+	\begin{algorithmic}
+		\State /* Transformador codificador/decodificador o de secuencia-a-secuencia */
+		\State \textbf{Entrada:} $\boldsymbol{z}, \boldsymbol{x} \in V^{*}$, dos secuencias de identificadores de tokens
+		\State \textbf{Salida:} $\boldsymbol{P} \in (0,1)^{N_V \times longitud(x)}$, t de \textbf{P} representa $\hat{P_{\theta}}(x[t+1] \mid \boldsymbol{x}[1:t], \boldsymbol{z})$
+		\State \textbf{Hiperparámetros:} $\ell_{max}, L_{enc}, L_{dec}, H, d_e, d_{mlp}, d_f \in \mathbb{N}$
+		\State \textbf{Parámetros:} $\boldsymbol{\theta}$ que incluye a: 
+		\State \hspace{0.5cm} $\boldsymbol{W_e} \in \mathbb{R}^{d_e \times N_V}, \boldsymbol{W_p} \in \mathbb{R}^{d_e \times \ell_{max}}$, matrices de embedding de token y posición
+		\State \hspace{0.5cm} Para $l \in [L_{enc}]$:
+		\State \hspace{1cm} $\boldsymbol{W}_{qkv,l}^{enc}$, auto-atención de la capa $l$
+		\State \hspace{1cm} $\boldsymbol{\gamma}_l^1$, $\boldsymbol{\beta}_l^1$, $\boldsymbol{\gamma}_l^2$, $\boldsymbol{\beta}_l^2$ $\in \mathbb{R}^{d_e}$, dos conjuntos de normalización de capas
+		\State \hspace{1cm} $\boldsymbol{W}_{mlp1}^l \in \mathbb{R}^{d_{mlp} \times d_e}$, $\boldsymbol{b}_{mlp1}^l \in \mathbb{R}^{d_{mlp}}$, $\boldsymbol{W}_{mlp2}^l \in \mathbb{R}^{d_{mlp} \times d_e}$, $\boldsymbol{b}_{mlp2}^l \in \mathbb{R}^{d_{mlp}}$
+		\State \hspace{0.5cm} Para $l \in [L_{dec}]$:
+		\State \hspace{1cm} $\boldsymbol{W}_{qkv,l}^{dec}$, $\boldsymbol{W}_{qkv,l}^{e/d}$, auto-atención y auto-atención cruzada de la capa $l$
+		\State \hspace{1cm} $\boldsymbol{\gamma}_l^3$, $\boldsymbol{\beta}_l^3$, $\boldsymbol{\gamma}_l^4$, $\boldsymbol{\beta}_l^4$, $\boldsymbol{\gamma}_l^5$, $\boldsymbol{\beta}_l^5$  $\in \mathbb{R}^{d_e}$, tres conjuntos de normalización de capas
+		\State \hspace{1cm} $\boldsymbol{W}_{mlp3}^l \in \mathbb{R}^{d_{mlp} \times d_e}$, $\boldsymbol{b}_{mlp3}^l \in \mathbb{R}^{d_{mlp}}$, $\boldsymbol{W}_{mlp4}^l \in \mathbb{R}^{d_{mlp} \times d_e}$, $\boldsymbol{b}_{mlp4}^l \in \mathbb{R}^{d_{mlp}}$
+		\State \hspace{0.5cm} $\boldsymbol{W}_u \in \mathbb{R}^{N_V \times d_e}$, matriz inversa de embedding
+		\State
+		\begin{tabular}{ l l}
+			\multicolumn{2}{l}{/* Codificación de la secuencia de contexto */}\\
+			\textbf{1} & $\ell_z \leftarrow longitud(z)$\\
+			\textbf{2} & para $t \in [\ell_z] : \boldsymbol{e}_t \leftarrow \boldsymbol{W}_e[:,z[t]] + \boldsymbol{W}_p[:,t]$\\
+			\textbf{3} & $\boldsymbol{Z} \leftarrow [\boldsymbol{e}_1, \boldsymbol{e}_2, ...,\boldsymbol{e}_l]$\\
+			\textbf{4} & \textbf{para} $\ell = 1, 2, ..., L_{enc}$ \textbf{hacer}\\
+			\textbf{5} & \hspace{0.5cm} $\boldsymbol{Z} \leftarrow \boldsymbol{Z} + atencion\_multicabezal(\boldsymbol{Z} \mid \boldsymbol{W}_{qkv, l}^{enc}, Mask \equiv 1)$\\
+			\textbf{6} & \hspace{0.5cm} para $t \in [\ell_Z] : \boldsymbol{Z}[:,t] \leftarrow normalizacion(\boldsymbol{Z}[:,t] \mid \boldsymbol{\gamma}_l^1, \boldsymbol{\beta}_l^1)$\\
+			\textbf{7} & \hspace{0.5cm} $\boldsymbol{Z} \leftarrow \boldsymbol{Z} + \boldsymbol{W}_{mlp2}^l \text{ReLU}(\boldsymbol{W}_{mlp1}^l \boldsymbol{Z} + \boldsymbol{b}_{mlp1}^l \boldsymbol{1}^T) + \boldsymbol{b}_{mlp2}^l \boldsymbol{1}^T$\\
+			\textbf{8} & \hspace{0.5cm} para $t \in [\ell_Z] : \boldsymbol{Z}[:,t] \leftarrow normalizacion(\boldsymbol{Z}[:,t] \mid \boldsymbol{\gamma}_l^2, \boldsymbol{\beta}_l^2)$\\
+			\textbf{9} & \textbf{fpara}\\
+			\multicolumn{2}{l}{/* Decodificación de la primera secuencia condicionada por el contexto */}\\
+			\textbf{10} & $\ell_X \leftarrow longitud(X)$\\
+			\textbf{11} & para $t \in [\ell_X] : \boldsymbol{e}_t \leftarrow \boldsymbol{W}_e[:,x[t]] + \boldsymbol{W}_p[:,t]$\\
+			\textbf{12} & $\boldsymbol{X} \leftarrow [\boldsymbol{e}_1, \boldsymbol{e}_2, ...,\boldsymbol{e}_l]$\\			
+			\textbf{13} & \textbf{para} $i = 1, 2, ..., L_{dec}$ \textbf{hacer}\\
+			\textbf{14} & \hspace{0.5cm} $\boldsymbol{X} \leftarrow \boldsymbol{X} + atencion\_multicabezal(\boldsymbol{X} \mid \boldsymbol{W}_{qkv, l}^{dec}, Mask[t,t'] = [[t \le t']])$\\			
+			\textbf{15} & \hspace{0.5cm} para $t \in [\ell_X] : \boldsymbol{X}[:,t] \leftarrow normalizacion(\boldsymbol{X}[:,t] \mid \boldsymbol{\gamma}_l^3, \boldsymbol{\beta}_l^3)$\\			
+			\textbf{16} & \hspace{0.5cm} $\boldsymbol{X} \leftarrow \boldsymbol{X} + atencion\_multicabezal(\boldsymbol{X}, \boldsymbol{Z} \mid \boldsymbol{W}_{qkv, l}^{e/d}, Mask \equiv 1)$\\
+			\textbf{17} & \hspace{0.5cm} para $t \in [\ell_X] : \boldsymbol{X}[:,t] \leftarrow normalizacion(\boldsymbol{X}[:,t] \mid \boldsymbol{\gamma}_l^4, \boldsymbol{\beta}_l^4)$\\
+			\textbf{18} & \hspace{0.5cm} $\boldsymbol{X} \leftarrow \boldsymbol{X} + \boldsymbol{W}_{mlp4}^l \text{ReLU}(\boldsymbol{W}_{mlp3}^l \boldsymbol{X} + \boldsymbol{b}_{mlp3}^l \boldsymbol{1}^T) + \boldsymbol{b}_{mlp4}^l \boldsymbol{1}^T$\\
+			\textbf{19} & \textbf{fpara}\\
+			\textbf{20} & \textbf{return} $P = softmax(\boldsymbol{W_u X})$\\						
+		\end{tabular}		
+	\end{algorithmic}
+	\label{alg:codificadores-decodificadores}
+\end{algorithm}
+
+
+En la figura \ref{fig:sec-a-sec} representa el diagrama funcional típico representativo de esta arquitectura. Este diagrama es equivalente al de la figura \ref{fig:transformador}, mostrando los elementos constitutivos al más alto nivel, esto es: los bloques de tratamiento de la secuencia de entrada, los codificadores, decodificadores y finalmente la capa de clasificación y salida.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics{figs/encoder-decoder-transformer.pdf}
+	\label{fig:sec-a-sec}
+	\caption{Arquitectura típica del modelo de transformador de secuencia-a-secuencia}
+\end{figure}
+
+En la figura \ref{fig:sec-a-sec-ejemplo} mostramos un ejemplo de una secuencia típica de entrada y otra de salida. Las secuencias mostradas serían un ejemplo de una traducción de una secuencia inicial en griego clásico a otra secuencia en español. Al modelo se le entraría la primera y se obtendría como salida la segunda.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics{figs/seq-to-seq-transformer-example.pdf}
+	\label{fig:sec-a-sec-ejemplo}
+	\caption{Ejemplo de un conjunto de entrada y salida común de un modelo secuencia-a-secuencia. En este caso sería un modelo de traducción de griego clásico al español.}
+\end{figure}
+
+En el algoritmo \ref{alg:entrenamiento-codificadores-decodificadores} se muestra lo que sería el código necesario para realizar la optimización del modelo utilizando un conjunto de datos de entrada.
+
+\begin{algorithm}[H]
+	\caption{$\hat{\boldsymbol{\theta}} \leftarrow entrenamientoCD(\boldsymbol{z}_{1:N_{data}}, \boldsymbol{x}_{1:N_{data}}, \boldsymbol{\theta})$}
+	\begin{algorithmic}
+		\State /* Entrenamiento de un transformador de secuencia-a-secuencia */
+		\State \textbf{Entrada:} $(\boldsymbol{z}_n, \boldsymbol{x}_n)_{n=1}^{N_{data}}$, un conjunto de datos de parejas de secuencias
+		\State \textbf{Entrada:} $\boldsymbol{\theta}$, valores de partida de los parámetros del transformador
+		\State \textbf{Salida:} $\hat{\boldsymbol{\theta}}$, valor de los parámetros después del entrenamiento
+		\State \textbf{Hiperparámetros:} $N_{epochs} \in \mathbb{N}, \eta \in (0, \infty)$
+		\State
+		\begin{tabular}{ l l}
+			\textbf{1} & \textbf{para} $i = 1, 2, ..., N_{epochs} \textbf{ hacer}$\\
+			\textbf{2} & \hspace{0.5cm} \textbf{para} $n = 1, 2, ..., N_{data} \textbf{ hacer}$ \\
+			\textbf{3} & \hspace{0.5cm} $\ell \leftarrow longitud(\boldsymbol{x}_n)$\\
+			\textbf{4} & \hspace{0.5cm} $\boldsymbol{P_{\theta}} \leftarrow transformador\_de\_codificadores\_decodificadores(\boldsymbol{z}_n, \boldsymbol{x}_n \mid \boldsymbol{\theta})$\\			
+			\textbf{5} & \hspace{0.5cm} $loss(\boldsymbol{\theta}) = - \sum_{t=1}^{\ell-1} log P (\boldsymbol{\theta})[x_n[t+1],t]$\\
+			\textbf{6} & \hspace{0.5cm} $\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta \nabla loss(\boldsymbol{\theta})$\\
+			\textbf{7} & \hspace{0.5cm} \textbf{fpara}\\
+			\textbf{8} & \textbf{fpara}\\
+			\textbf{9} & \textbf{retorna: } $\hat{\boldsymbol{\theta}} = \boldsymbol{\theta}$\\
+		\end{tabular}				
+	\end{algorithmic}
+	\label{alg:entrenamiento-codificadores-decodificadores}
+\end{algorithm}
+
+
+\subsection{Transformadores bidireccionales o de auto-codificación}
+
+Los modelos de auto-codificación son aquellos que están pre-entrenados para la corrección de entradas corrompidas artificialmente. Esto se hace para entrenar al modelo en la reconstrucción del texto original. Este tipo de modelos se corresponden con la parte del codificador de la arquitectura original en el sentido que no utilizan máscaras para anular el efecto del texto posterior. Estos modelos construyen una representación bidireccional de la frase en su totalidad y pueden ser posteriormente ser entrenados para resolución de tareas específicas como la generación de texto, aunque su aplicación principal es la clasificación de frases. Un ejemplo típico de estos modelos sería \textbf{BERT} \cite{devlin2018bert}.
+
+El algoritmo \ref{alg:codificadores} recoge los detalles de implementación de lo que sería un transformador bidireccional, esto es un transformador formado únicamente por codificadores.
+
+\begin{algorithm}[H]
+	\caption{$\boldsymbol{P} \leftarrow codificador (\boldsymbol{x} \mid \boldsymbol{\theta})$}
+	\begin{algorithmic}
+		\State /* Transformador formado por codificadores, bidireccional o auto-codificador */
+		\State \textbf{Entrada:} $\boldsymbol{x} \in V^{*}$, una secuencia de identificadores de tokens
+		\State \textbf{Salida:} $\boldsymbol{P} \in (0,1)^{N_V \times longitud(x)}$, donde cada columna de $\boldsymbol{P}$ es una distribución sobre todo el vocabulario 
+		\State \textbf{Hiperparámetros:} $\ell_{max}, L, H, d_e, d_{mlp}, d_f \in \mathbb{N}$
+		\State \textbf{Parámetros:} $\boldsymbol{\theta}$ que incluye a: 
+		\State \hspace{0.5cm} $\boldsymbol{W_e} \in \mathbb{R}^{d_e \times N_V}, \boldsymbol{W_p} \in \mathbb{R}^{d_e \times \ell_{max}}$, matrices de embedding de token y posición
+		\State \hspace{0.5cm} Para $l \in [L]$:
+		\State \hspace{1cm} $\boldsymbol{W}_{qkv,l}$, parámetros de auto-atención de la capa $l$
+		\State \hspace{1cm} $\boldsymbol{\gamma}_l^1$, $\boldsymbol{\beta}_l^1$, $\boldsymbol{\gamma}_l^2$, $\boldsymbol{\beta}_l^2$ $\in \mathbb{R}^{d_e}$, dos conjuntos de normalización de capas
+		\State \hspace{1cm} $\boldsymbol{W}_{mlp1}^l \in \mathbb{R}^{d_{mlp} \times d_e}$, $\boldsymbol{b}_{mlp1}^l \in \mathbb{R}^{d_{mlp}}$, $\boldsymbol{W}_{mlp2}^l \in \mathbb{R}^{d_{mlp} \times d_e}$, $\boldsymbol{b}_{mlp2}^l \in \mathbb{R}^{d_{mlp}}$
+		\State \hspace{0.5cm} $\boldsymbol{W}_f \in \mathbb{R}^{d_f \times d_e}$, $\boldsymbol{b}_f \in \mathbb{R}^{d_f}$, $\boldsymbol{\gamma}, \boldsymbol{\beta} \in \mathbb{R}^{d_f}$, proyección lineal y normalización final
+		\State \hspace{0.5cm} $\boldsymbol{W}_u \in \mathbb{R}^{N_V \times d_e}$, matriz inversa de embedding
+		\State
+		\begin{tabular}{ l l}
+			\textbf{1} & $\ell \leftarrow longitud(x)$\\
+			\textbf{2} & para $t \in [\ell] : \boldsymbol{e}_t \leftarrow \boldsymbol{W}_e[:,x[t]] + \boldsymbol{W}_p[:,t]$\\
+			\textbf{3} & $\boldsymbol{X} \leftarrow [\boldsymbol{e}_1, \boldsymbol{e}_2, ...,\boldsymbol{e}_l]$\\
+			\textbf{4} & \textbf{para} $\ell = 1, 2, ..., L$ \textbf{hacer}\\
+			\textbf{5} & \hspace{0.5cm} $\boldsymbol{X} \leftarrow \boldsymbol{X} + atencion\_multicabezal(\boldsymbol{X} \mid \boldsymbol{W}_{qkv, l}, Mask \equiv 1)$\\
+			\textbf{6} & \hspace{0.5cm} para $t \in [\ell] : \boldsymbol{X}[:,t] \leftarrow normalizacion(\boldsymbol{X}[:,t] \mid \boldsymbol{\gamma}_l^1, \boldsymbol{\beta}_l^1)$\\
+			\textbf{7} & \hspace{0.5cm} $\boldsymbol{X} \leftarrow \boldsymbol{X} + \boldsymbol{W}_{mlp2}^l \text{GELU}(\boldsymbol{W}_{mlp1}^l \boldsymbol{X} + \boldsymbol{b}_{mlp1}^l \boldsymbol{1}^T) + \boldsymbol{b}_{mlp2}^l \boldsymbol{1}^T$\\
+			\textbf{8} & \hspace{0.5cm} para $t \in [\ell] : \boldsymbol{X}[:,t] \leftarrow normalizacion(\boldsymbol{X}[:,t] \mid \boldsymbol{\gamma}_l^2, \boldsymbol{\beta}_l^2)$\\
+			\textbf{9} & \textbf{fpara}\\
+			\textbf{10} & $\boldsymbol{X} \leftarrow  \text{GELU}(\boldsymbol{W}_{f} \boldsymbol{X} + \boldsymbol{b}_{f} \boldsymbol{1}^T)$\\
+			\textbf{11} & para $t \in [\ell] : \boldsymbol{X}[:,t] \leftarrow normalizacion(\boldsymbol{X}[:,t] \mid \boldsymbol{\gamma}, \boldsymbol{\beta})$\\
+			\textbf{12} & \textbf{return} $P = softmax(\boldsymbol{W_u X})$\\						
+		\end{tabular}		
+	\end{algorithmic}
+	\label{alg:codificadores}
+\end{algorithm}
+
+\begin{algorithm}[H]
+	\caption{$\hat{\boldsymbol{\theta}} \leftarrow entrenamientoC(\boldsymbol{x}_{1:N_{data}}, \boldsymbol{\theta})$}
+	\begin{algorithmic}
+		\State /* Entrenamiento mediante modelización mediante máscara */
+		\State \textbf{Entrada:} $\{\boldsymbol{x}_n\}_{n=1}^{N_{data}}$, un conjunto de datos de secuencias
+		\State \textbf{Entrada:} $\boldsymbol{\theta}$, valores de partida de los parámetros del transformador
+		\State \textbf{Salida:} $\hat{\boldsymbol{\theta}}$, valor de los parámetros después del entrenamiento
+		\State \textbf{Hiperparámetros:} $N_{epochs} \in \mathbb{N}, \eta \in (0, \infty), p_{mask} \in (0,1)$
+		\State
+		\begin{tabular}{ l l}
+			\textbf{1} & \textbf{para} $i = 1, 2, ..., N_{epochs} \textbf{ hacer}$\\
+			\textbf{2} & \hspace{0.5cm} \textbf{para} $n = 1, 2, ..., N_{data} \textbf{ hacer}$ \\
+			\textbf{3} & \hspace{0.5cm} $\ell \leftarrow longitud(\boldsymbol{x}_n)$\\
+			\textbf{4} & \hspace{1cm} \textbf{para} $t = 1, 2, ..., \ell \textbf{ hacer}$ \\
+			\textbf{5} & \hspace{1.5cm} $\tilde{x}_n[t] \leftarrow$ enmascara\_token o $x_n[t]$ aleatoriamente con probabilidad $p_{mask}$ o $1-p_{mask}$\\
+			\textbf{6} & \hspace{1cm} \textbf{fpara}\\
+			\textbf{7} & \hspace{0.5cm} $\tilde{T} \leftarrow \{t \in [\ell] : \tilde{x}_n[t] = enmascara\_token\}$\\			
+			\textbf{8} & \hspace{0.5cm} $\boldsymbol{P}(\boldsymbol{\theta}) \leftarrow transformador\_de\_codificadores(\tilde{\boldsymbol{x}}_n \mid \boldsymbol{\theta})$\\
+			\textbf{10} & \hspace{0.5cm} $loss(\boldsymbol{\theta}) = - \sum_{t \in \tilde{T}} log P(\boldsymbol{\theta})[x_n[t],t]$\\
+			\textbf{11} & \hspace{0.5cm} $\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta \nabla loss(\boldsymbol{\theta})$\\			
+			\textbf{12} & \hspace{0.5cm} \textbf{fpara}\\
+			\textbf{13} & \textbf{fpara}\\
+			\textbf{14} & \textbf{retorna: } $\hat{\boldsymbol{\theta}} = \boldsymbol{\theta}$\\
+		\end{tabular}				
+	\end{algorithmic}
+	\label{alg:entrenamiento-codificadores}
+\end{algorithm}
+
+La red de codificación apila en serie $L$ elementos del mismo tipo. La salida de cada bloque sirve de entrada para el siguiente. Las dimensiones de la transformación se mantienen, por lo que entrada y salida tienen el mismo tamaño. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics{figs/encoder-transformer.pdf}
+	\label{fig:autocodificadores}
+	\caption{Arquitectura típica del modelo de transformador auto-codificador}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics{figs/encoder-transformer-example.pdf}
+	\label{fig:autocodificacion-ejemplo}
+	\caption{Ejemplo de entradas y salidas típicas de los modelos de auto-codificación. En este caso se presentan tres entradas posibles con sus valores de salida esperados}
+\end{figure}
+
+\begin{table}[ht!]
+	\centering
+	\begin{tabular}{ l | c | c | c | c | c | c }
+			\hline %\rowcolor[gray]{0.8}
+			%% header
+			\textbf{} & \textbf{BERT-b} & \textbf{BERT-l} & \textbf{XLNet-l} & \textbf{RoBERTa-l} & \textbf{DistillBERT-b} & \textbf{ALBERT-l} \\
+			\hline
+			\multicolumn{7}{c}{\textbf{Arquitectura}}\\	
+			\hline		
+			\textbf{$n_{param}$} & \SI{108e6}{} & $\SI{340e6}{}$ & $\SI{340e6}{}$ & $\SI{355e6}{}$ & $\SI{66e6}{}$ & $\SI{18e6}{}$ \\
+			\hline
+			\textbf{$T_{param}$} & \SI{432}{MB} & $\SI{1360}{\mega\byte}$ & $\SI{1360}{\mega\byte}$ & $\SI{1420}{\mega\byte}$ & $\SI{264}{\mega\byte}$ & $\SI{72}{\mega\byte}$ \\
+			\hline
+			\textbf{$\ell_{max}$} & $512$ & $512$ &  &  & & \\
+			\hline
+			\textbf{$L_{enc}$} & $12$ & $24$ & $24$ & $24$ & $6$ & $24$\\
+			\hline	
+			\textbf{$H$} & $12$ & $16$ & $16$ & $16$ & $12$ & $16$\\
+			\hline			
+			\textbf{$d_{attn}$} & $64$ & $64$ & $64$ & $64$ & & $8$\\						
+			\hline
+			\textbf{$d_{e}$} & $768$ & $1024$ & $1024$ & $1024$ & & $128$\\
+			\hline			
+			\textbf{$d_{mlp}$} & $3072$ & $4096$ &  & $4096$ & & $512$ \\						
+			\hline
+			\textbf{$N_V$} & 30522 &  &  & & &\\
+			\hline				
+			\textbf{$c_{entrada}$} & \multicolumn{2}{c}{WordPiece} & & & &\\			
+			\hline					
+			\multicolumn{7}{c}{\textbf{Entrenamiento}}\\
+			\hline				
+			\textbf{$T_{datos}$} & $\SI{16}{\giga\byte}$ & $\SI{16}{\giga\byte}$ & $\SI{113}{\giga\byte}$ & $\SI{160}{\giga\byte}$ & $\SI{16}{\giga\byte}$ & $\SI{16}{\giga\byte}$\\			
+			\hline										
+			\textbf{$n_{tokens}$} & $\SI{3.3e9}{}$ & $\SI{3.3e9}{}$  & $\SI{33e9}{}$ &  & $\SI{3.3e9}{}$ & \\			
+			\hline							
+			\textbf{$ratio_{compr}$} & $30.5$ & $9.7$ & $97.0$  & & $50.0$ & \\			
+			\hline							
+			\textbf{Optimizador} & & & & Adam & &\\			
+			\hline							
+			\textbf{BS} & &  &  & 8000 & &\\			
+			\hline	
+			\multicolumn{7}{c}{\textbf{Rendimiento}}\\
+			\hline											
+			\textbf{GLUE} & & base & $+15\%$ & $+20\%$ & $-3\%$ & $+25\%$ \\			
+			\hline										
+			
+		\end{tabular}
+	\caption{Características de algunos de los primeros modelos bidireccionales más conocidos}	
+	\label{table:bidireccionales}
+\end{table}
+
+\subsection{Transformadores auto-regresivos}
+
+Los modelos auto-regresivos son aquellos que a partir de una secuencia de entrada inicial generan nuevas salidas que a su vez se incorporan a la secuencia inicial como entrada para generar nuevas salidas. Su principal aplicación es la generación de texto, aunque es posible ajustarlos con un entrenamiento posterior para adaptarlos a la resolución de problemas específicos. Un ejemplo de este tipo de modelos sería la familia de \textbf{GPT}.
+
+El algoritmo \ref{alg:decodificadores} recoge los detalles de implementación de lo que sería un transformador auto-regresivo, esto es un transformador formado únicamente por decodificadores.
+
+\begin{algorithm}[h]
+	\caption{$\boldsymbol{P} \leftarrow transformadorD(\boldsymbol{x} \mid \boldsymbol{\theta})$}
+	\begin{algorithmic}
+		\State /* Transformador formado por decodificadores o auto-regresivo */
+		\State \textbf{Entrada:} $\boldsymbol{x} \in V^{*}$, una secuencia de identificadores de tokens
+		\State \textbf{Salida:} $\boldsymbol{P} \in (0,1)^{N_V \times longitud(x)}$, donde la columna t de \textbf{P} representa $\hat{P_{\theta}}(x[t+1] \mid \boldsymbol{x}[1:t])$
+		\State \textbf{Hiperparámetros:} $\ell_{max}, L, H, d_e, d_{mlp}, d_f \in \mathbb{N}$
+		\State \textbf{Parámetros:} $\boldsymbol{\theta}$ que incluye a: 
+		\State \hspace{0.5cm} $\boldsymbol{W_e} \in \mathbb{R}^{d_e \times N_V}, \boldsymbol{W_p} \in \mathbb{R}^{d_e \times \ell_{max}}$, matrices de embedding de token y posición
+		\State \hspace{0.5cm} Para $l \in [L]$:
+		\State \hspace{1cm} $\boldsymbol{W}_{qkv,l}$, parámetros de auto-atención de la capa $l$
+		\State \hspace{1cm} $\boldsymbol{\gamma}_l^1$, $\boldsymbol{\beta}_l^1$, $\boldsymbol{\gamma}_l^2$, $\boldsymbol{\beta}_l^2$ $\in \mathbb{R}^{d_e}$, dos conjuntos de normalización de capas
+		\State \hspace{1cm} $\boldsymbol{W}_{mlp1}^l \in \mathbb{R}^{d_{mlp} \times d_e}$, $\boldsymbol{b}_{mlp1}^l \in \mathbb{R}^{d_{mlp}}$, $\boldsymbol{W}_{mlp2}^l \in \mathbb{R}^{d_{mlp} \times d_e}$, $\boldsymbol{b}_{mlp2}^l \in \mathbb{R}^{d_{mlp}}$
+		\State \hspace{0.5cm} $\boldsymbol{W}_f \in \mathbb{R}^{d_f \times d_e}$, $\boldsymbol{b}_f \in \mathbb{R}^{d_f}$, $\boldsymbol{\gamma}, \boldsymbol{\beta} \in \mathbb{R}^{d_f}$, proyección lineal y normalización final
+		\State \hspace{0.5cm} $\boldsymbol{W}_u \in \mathbb{R}^{N_V \times d_e}$, matriz inversa de embedding
+		\State
+		\begin{tabular}{ l l}
+			\textbf{1} & $\ell \leftarrow longitud(x)$\\
+			\textbf{2} & para $t \in [\ell] : \boldsymbol{e}_t \leftarrow \boldsymbol{W}_e[:,x[t]] + \boldsymbol{W}_p[:,t]$\\
+			\textbf{3} & $\boldsymbol{X} \leftarrow [\boldsymbol{e}_1, \boldsymbol{e}_2, ...,\boldsymbol{e}_l]$\\
+			\textbf{4} & \textbf{para} $\ell = 1, 2, ..., L$ \textbf{hacer}\\
+			\textbf{5} & \hspace{0.5cm} para $t \in [\ell] : \boldsymbol{X}[:,t] \leftarrow normalizacion(\boldsymbol{X}[:,t] \mid \boldsymbol{\gamma}_l^1, \boldsymbol{\beta}_l^1)$\\			
+			\textbf{6} & \hspace{0.5cm} $\boldsymbol{X} \leftarrow \boldsymbol{X} + atencion\_multicabezal(\boldsymbol{X} \mid \boldsymbol{W}_{qkv, l}, Mask[t,t'] = [[t \le t']])$\\
+			\textbf{7} & \hspace{0.5cm} para $t \in [\ell] : \boldsymbol{X}[:,t] \leftarrow normalizacion(\boldsymbol{X}[:,t] \mid \boldsymbol{\gamma}_l^2, \boldsymbol{\beta}_l^2)$\\
+			\textbf{8} & \hspace{0.5cm} $\boldsymbol{X} \leftarrow \boldsymbol{X} + \boldsymbol{W}_{mlp2}^l \text{GELU}(\boldsymbol{W}_{mlp1}^l \boldsymbol{X} + \boldsymbol{b}_{mlp1}^l \boldsymbol{1}^T) + \boldsymbol{b}_{mlp2}^l \boldsymbol{1}^T$\\
+			\textbf{9} & \textbf{fpara}\\
+			\textbf{10} & para $t \in [\ell] : \boldsymbol{X}[:,t] \leftarrow normalizacion(\boldsymbol{X}[:,t] \mid \boldsymbol{\gamma}, \boldsymbol{\beta})$\\
+			\textbf{11} & \textbf{return} $P = softmax(\boldsymbol{W_u X})$\\						
+		\end{tabular}		
+	\end{algorithmic}
+	\label{alg:decodificadores}
+\end{algorithm}
+
+Igual que en los codificadores, la red de decodificación apila en serie N elementos del mismo tipo. La salida de cada bloque sirve de entrada para el siguiente. Las dimensiones de la transformación se mantienen, por lo que entrada y salida tienen el mismo tamaño. 
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics{figs/decoder-transformer.pdf}
+	\label{fig:autoregresivo}
+	\caption{Arquitectura de transformador auto-regresivo}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics{figs/decoder-transformer-example.pdf}
+	\label{fig:autoregresivo-ejemplo}
+	\caption{Ejemplo de entradas y salidas típicas de los modelos auto-regresivos. En este caso se presentan tres entradas posibles con sus respectivas salidas esperadas}
+\end{figure}
+
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{ l | c | c | c }
+			\hline %\rowcolor[gray]{0.8}
+			%% header
+			\textbf{} & \textbf{GPT-1} & \textbf{GPT-2} & \textbf{GPT-3} \\
+			\hline
+			\multicolumn{4}{c}{\textbf{Arquitectura}}\\	
+			\hline		
+			\textbf{$n_{param}$} & $\SI{117e6}{}$ & $\SI{1.5e9}{}$ & $\SI{175e9}{}$\\
+			\hline
+			\textbf{$T_{param}$} & $\SI{468}{\mega\byte}$ & $\SI{6}{\giga\byte}$ & $\SI{700}{\giga\byte}$\\
+			\hline
+			\textbf{$\ell_{max}$} & $512$ & $1024$ & $2048$\\
+			\hline
+			\textbf{$L_{dec}$} & $12$ & $48$ & $96$\\
+			\hline	
+			\textbf{$H$} & $12$ & $12$ & $96$\\
+			\hline			
+			\textbf{$d_{attn}$} & $64$ &  & $128$\\						
+			\hline
+			\textbf{$d_{mlp}$} & $3072$ &  & \\						
+			\hline
+			\textbf{$N_V$} & $40478$ & $50257$ & $50257$\\			\hline				
+			\textbf{$c_{entrada}$} & BPE & BPE & BPE\\			
+			\hline					
+			\textbf{$d_{e}$} & $768$ & $1600$ & $12288$\\
+			\hline
+			\multicolumn{4}{c}{\textbf{Entrenamiento}}\\
+			\hline				
+			\textbf{$T_{datos}$} & $\SI{1}{\giga\byte}$ & $\SI{40}{\giga\byte}$ & $\SI{2}{\tera\byte}$\\			
+			\hline										
+			\textbf{$n_{tokens}$} & \SI{25e7}{}  & $\SI{10e9}{}$ & $\SI{499e9}{}$\\			
+			\hline							
+			\textbf{$ratio_{compr}$} & $2.13$ & $6.66$ & $2.85$\\			
+			\hline							
+			\textbf{Optimizador} & Adam & Adam & Adam\\			
+			\hline							
+			\textbf{BS} & $64$ & $512$ & $\SI{3.2e6}{}$\\			
+			\hline							
+			
+		\end{tabular}
+	\caption{Características de los modelos autoregresivos de la familia GPT.}
+	\label{table:autoregresivos}
+\end{table}
+
+En el algoritmo \ref{alg:entrenamiento-decodificadores} se muestra el conjunto de operaciones que se llevan a cabo en un bucle de entrenamiento.
+
+\begin{algorithm}[H]
+	\caption{$\hat{\boldsymbol{\theta}} \leftarrow entrenamientoD(\boldsymbol{x}_{1:N_{data}}, \boldsymbol{\theta})$}
+	\begin{algorithmic}
+		\State /* Entrenamiento para predicción de siguiente token */
+		\State \textbf{Entrada:} $\{\boldsymbol{x}_n\}_{n=1}^{N_{data}}$, un conjunto de datos de secuencias
+		\State \textbf{Entrada:} $\boldsymbol{\theta}$, valores de partida de los parámetros del transformador
+		\State \textbf{Salida:} $\hat{\boldsymbol{\theta}}$, valor de los parámetros después del entrenamiento
+		\State
+		\begin{tabular}{ l l}
+			\textbf{1} & \textbf{para} $i = 1, 2, ..., N_{epochs} \textbf{hacer}$\\
+			\textbf{2} & \hspace{0.5cm} \textbf{para} $n = 1, 2, ..., N_{data} \textbf{hacer}$ \\
+			\textbf{3} & \hspace{0.5cm} $\ell \leftarrow longitud(\boldsymbol{x}_n)$\\
+			\textbf{4} & \hspace{0.5cm} $\boldsymbol{P_{\theta}} \leftarrow transformador\_de\_decodificadores(\boldsymbol{x}_n \mid \boldsymbol{\theta})$\\			
+			\textbf{5} & \hspace{0.5cm} $loss(\boldsymbol{\theta}) = - \sum_{t=1}^{\ell-1} log P (\boldsymbol{\theta})[x_n[t+1],t]$\\
+			\textbf{6} & \hspace{0.5cm} $\boldsymbol{\theta} \leftarrow \boldsymbol{theta} - \eta \nabla loss(\boldsymbol{\theta})$\\
+			\textbf{7} & \hspace{0.5cm} \textbf{fpara}\\
+			\textbf{8} & \textbf{fpara}\\
+			\textbf{9} & \textbf{retorna: } $\hat{\boldsymbol{\theta}} = \boldsymbol{\theta}$\\
+		\end{tabular}				
+	\end{algorithmic}
+	\label{alg:entrenamiento-decodificadores}
+\end{algorithm}
+
+\begin{algorithm}[H]
+	\caption{$\hat{\boldsymbol{\theta}} \leftarrow inferencia\_tranformadorD(\boldsymbol{x}, \hat{\boldsymbol{\theta}})$}
+	\begin{algorithmic}
+		\State /* Predicción usando un modelo entrenado */
+		\State \textbf{Entrada:} $\hat{\boldsymbol{\theta}}$, parámetros entrenados
+		\State \textbf{Entrada:} $\boldsymbol{x} \in V^{*}$, una secuencia de entrada
+		\State \textbf{Salida:} $y \in V^{*}$, predicción de la continuación de la secuencia de entrada
+		\State \textbf{Hiperparámetros:} $\ell_{gen} \in \mathbb{N}, \tau \in (0, \infty)$
+		\State
+		\begin{tabular}{ l l}
+			\textbf{1} & $\ell \leftarrow longitud(\boldsymbol{x})$\\
+			\textbf{2} & \textbf{para} $n = 1, 2, ..., \ell_{gen} \textbf{hacer}$ \\
+			\textbf{3} & \hspace{0.5cm} $\boldsymbol{P} \leftarrow transformador\_de\_decodificadores(\boldsymbol{x} \mid \hat{\theta})$\\
+			\textbf{4} & \hspace{0.5cm} $\boldsymbol{p} \leftarrow \boldsymbol{P}[:,\ell+i-1]$\\			
+			\textbf{5} & \hspace{0.5cm} muestrea un token $y$ de $\boldsymbol{q} \sim \boldsymbol{p}^{1/\tau}$\\
+			\textbf{6} & \hspace{0.5cm} $\boldsymbol{x} \leftarrow [\boldsymbol{x}, y]$\\
+			\textbf{7} & \textbf{fpara}\\
+			\textbf{8} & \textbf{retorna } $y = \boldsymbol{x}[\ell + 1 : \ell+\ell_{gen}]$\\
+		\end{tabular}				
+	\end{algorithmic}
+	\label{alg:inferencia-decodificadores}
+\end{algorithm}
+
+\begin{algorithm}[H]
+	\caption{$\hat{\boldsymbol{\theta}} \leftarrow inferencia\_transformadorCD(\boldsymbol{x}, \hat{\boldsymbol{\theta}})$}
+	\begin{algorithmic}
+		\State /* Predicción usando un transformador secuencia-a-secuencia */
+		\State \textbf{Entrada:} $\hat{\boldsymbol{\theta}}$, parámetros entrenados
+		\State \textbf{Entrada:} $\boldsymbol{z} \in V^{*}$, una secuencia de entrada
+		\State \textbf{Salida:} $\hat{\boldsymbol{x}} \in V^{*}$, predicción de la secuencia de salida
+		\State \textbf{Hiperparámetros:} $\tau \in (0, \infty)$
+		\State
+		\begin{tabular}{ l l}
+			\textbf{1} & $\hat{\boldsymbol{x}} \leftarrow [bos\_token]$\\
+			\textbf{2} & $y \leftarrow 0$\\		
+			\textbf{3} & \textbf{mientras} $y \ne eos\_token \textbf{ hacer}$ \\
+			\textbf{4} & \hspace{0.5cm} $\boldsymbol{P} \leftarrow transformador\_CD(\boldsymbol{z}, \hat{\boldsymbol{x}} \mid \hat{\theta})$\\
+			\textbf{5} & \hspace{0.5cm} $\boldsymbol{p} \leftarrow \boldsymbol{P}[:,longitud(\hat{\boldsymbol{x}})]$\\			
+			\textbf{5} & \hspace{0.5cm} muestrea un token $y$ de $\boldsymbol{q} \sim \boldsymbol{p}^{1/\tau}$\\
+			\textbf{6} & \hspace{0.5cm} $\hat{\boldsymbol{x}} \leftarrow [\hat{\boldsymbol{x}}, y]$\\
+			\textbf{7} & \textbf{fpara}\\
+			\textbf{8} & \textbf{retorna } $\hat{\boldsymbol{x}}$\\
+		\end{tabular}				
+	\end{algorithmic}
+	\label{alg:inferencia-decodificadores2}
+\end{algorithm}
+
+%\subsubsection{\textbf{Retrieval-based models}}
+%
+%XXXXXXXXXXXXXXXXXXXXXXXXX
+
+\section{Transformadores para procesamiento del lenguaje natural (NLP)}
+
+\subsection{Desarrollos previos: embeddings}
+
+Previo a la introducción de los algoritmos basados en transformadores es importante hacer mención a un conjunto de algoritmos que se crearon en los años anteriores, concretamente a los algoritmos de creación de \textit{embeddings}.
+
+En el contexto de NLP un \textit{embedding} es una representación matemática del significado de las palabras. Esta transformación parte del supuesto que es posible representar el conocimiento en un espacio vectorial multi-dimensional. De esta manera cualquier palabra del lenguaje tendrá una transformación en ese espacio. A los vectores representativos de las palabras se les denomina \textit{embeddings}.
+
+En los años anteriores a la introducción de los transformadores se realizaron multitud de publicaciones definiendo distintos métodos para realizar dicha transformación. Entre los más conocidos tenemos a \textbf{Word2Vec} \cite{word2vec}, \textbf{GloVe} \cite{pennington2014glove}, \textbf{FastText} \cite{joulin2016fasttext}, entre otros.
+
+Estos algoritmos realizan la transformación utilizando una red neuronal poco profunda. Estre las propiedades más destacadas de estos algoritmos están las siguientes:
+
+\begin{itemize}
+	\item \textbf{Similaridad entre palabras de sinónimas o semejantes:} En el espacio transformado palabras de significado similar convergen en ubicaciones similares. Así por ejemplo, palabras como 'coche', 'vehículo' o 'furgoneta' están relativamente más cercanas entre ellas de otras como 'luna', 'espacio' o 'árbol', entendiendo la proximidad como una similaridad calculada como distancia euclidiana o similaridad del coseno, por ejemplo.
+	\item \textbf{Codificación de relaciones lingüísticas entre palabras:} Una característica cuando menos sorprendente de estas transformaciones es la codificación de algunas relaciones entre palabras como transformaciones lineales. Por ejemplo, la transformación lineal entre 'hombre' y 'mujer' es similar a la necesaria entre 'rey' y 'reina', 'tío' y 'tía' o 'actor' y 'actriz', generalizando por tanto esa transformación como una transformación de género. Así, esto habilita la posibilidad de realizar operaciones con resultados aproximados como $\overrightarrow{\text{rey}} - \overrightarrow{\text{hombre}} + \overrightarrow{\text{mujer}} \approx \overrightarrow{\text{reina}} $ o como $\overrightarrow{\text{París}} - \overrightarrow{\text{Francia}} + \overrightarrow{\text{Alemania}} \approx \overrightarrow{\text{Berlín}} $
+	
+\end{itemize}
+
+Las limitaciones de estos métodos proceden de la propia naturaleza de su diseño. Al estar entrenados para codificar el significado de las palabras aisladas, no codifican el contexto. Una posibilidad para integrar el contexto, en el entorno de las redes neuronales, pasó por utilizar los embeddings como transformaciones previas a la entrada a las redes neuronales recurrentes, con el objetivo que éstas se encargaran de codificar el contexto como medio de resolución de problemas de procesamiento natural concretos.
+
+Los transformadores suponen un paso más allá. El objetivo de los mismos pasa por realizar un aprendizaje de inicio a fin. Las transformaciones del embedding pasan a formar parte de la propia red y son aprendidas en tiempo de entrenamiento, quedando integradas como parte de la red global como los parámetros de auto-atención de la primera capa.
+
+\subsection{Inicios de los Transformadores para NLP}
+
+Las publicaciones iniciales que marcaron la evolución posterior de los transformadores se circunscriben en el ámbito del procesamiento natural. Presentamos a continuación, en orden cronológico, un breve resumen de aquellas que consideramos más relevantes para la definición de este paradigma de diseño así como las aportaciones más significativas de cada una de estas publicaciones.
+
+Introducción de la arquitectura. \cite{vaswani2017attention}
+
+\textbf{ULMFiT} (Universal Language Model Fine-tuning for Text Classification): Los autores presentan una solución para resolver cualquier tarea de NLP mediante aprendizaje por transferencia. Introdujo la idea de general-domain, aprendizaje no supervisado seguido de fine-tuning. Introdujeron también otras técnicas ampliamente utilizadas posteriormente en otros trabajos como slanted triangular learning rate schedules (akas warm-up). \cite{howard2018universal}
+
+\textbf{GPT} \cite{radford2018improving} y \textbf{GPT-2} \cite{radford2019language} (Generative Pre-Trained Transformers)
+Se presenta una arquitectura formada únicamente por decodificadores. (haciendo esto de esta forma se pierde la naturaleza autoregresiva/unidireccional del modelo??¿¿??) La mayor contribución de estas publicaciones es que demostraron el valor de entrenar modelos de enorme tamaño.
+
+\textbf{BERT} \cite{devlin2018bert} (Bidirectional Encoder Representations from Transformers)
+Los autores usa únicamente codificadores para preentrenar representaciones bidireccionales de texto no etiquetado. Estos modelos son afinados posteriormente con segundo entrenamiento, añadiendo únicamente una capa de salida adicional, para resolver aplicaciones específicas. Este modelo supuso un antes y un después en la resolución de problemas de NLP.
+
+\textbf{RoBERTa} \cite{liu2019roberta} (Robustly Optimized BERT Approach)
+Los autores proponen una arquitectura idéntica a BERT introduciendo una serie de mejoras del procedimiento de entrenamiento. Básicamente, es un BERT con un entrenamiento mejorado.
+
+\textbf{T5} \cite{raffel2020exploring} (Text-to-Text Transfer Transformer) Las principales contribuciones de este trabajo son, por una parte, la reformulación de la forma de reportar los resultados sustituyendo el enfoque numérico por un enfoque textual y por otra, el estudio sistemático de la contribución de la función objetivo, arquitecturas, conjuntos de datos, transfer approaches y otros factores en los resultados obtenidos en un conjunto de tareas canónicas de NLP.
+
+%\subsection{Tipos de representaciones aprendidas por los Transformadores}
+
+%Vamos a intentar clasificar los distintos tipos de representaciones que es posible conseguir dependiendo del tipo de transformador que se entrene.
+
+%\begin{enumerate}
+%	\item Representaciones contextuales vs no-contextuales: \textbf{Word2Vec} o \textbf{FastText} son no contextuales mientras que todos los procedentes delos transformadores son textuales.
+%	\item Unidireccional vs Bidireccionales
+%\end{enumerate}
+
+%\subsection{Escalado de tamaño en las capacidades de los transformadores}
+
+%Explicar lo de las emerging properties
+
+\section{Transformadores para Visión (ViT)}
+
+En las secciones anteriores hemos estudiado los transformadores en su aplicación de referencia, el procesamiento del lenguaje natural. Después de los prometedores resultados obtenidos en dicho campo, algunos autores empezaron a considerar la posibilidad de usar dicha arquitectura en otros campos como la visión. 
+
+Desde su introducción, se demostró que el rendimiento de los modelos ViT es comparable al de arquitecturas especializadas como son las redes convolucionales para aplicaciones típicas de visión por computador como la clasificación de imágenes \cite{dosovitskiy2020image}, detección de objetos \cite{zhu2020deformable}, segmentación semántica \cite{zheng2021rethinking}, colorización de la imagen \cite{kumar2021colorization}, visión de bajo nivel \cite{chen2021pre} y comprensión de video \cite{arnab2021vivit}, por citar algunas. Además, recientes investigaciones indican que los errores de predicción de ViTs son más consistentes con las de los humanos que las redes convolucionales \cite{tuli2021convolutional}. 
+
+El funcionamiento de los ViT es similar a un transformador convencional. La única diferencia esencial radica en la naturaleza de la señal de entrada, que en vez de ser una secuencia de palabras, es una imagen. La problemática radica, por tanto, en cómo tratar la entrada para que sea gestionable por el modelo; esto es, adaptar el \textit{tokenizador} para trabajar con imágenes. Una de las primeras propuestas realizadas en la bibliografía, con muy buenos resultados, consiste en particionar la imagen en partes disjuntas más pequeñas y alimentarlas a la red de forma secuencial. Cada parte tiene las mismas dimensiones (16x16, por ejemplo en \cite{dosovitskiy2020image}) y actúa de forma equivalente a lo que sería la codificación de un elemento en una secuencia. A este vector se le añade un \textit{embedding} para codificar la posición que ocupa en la imagen, al estilo de lo que se realiza con las secuencias de texto para ubicar cada elemento.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[scale=0.5]{figs/Vision-Transformer-architecture-main-blocks-First-image-is-split-into-fixed-size.png} 
+	\label{fig:embedding-imagen-transformador}
+	\caption{Diagrama del proceso de partición, secuenciación y embedding de una imagen para su procesado en el transformador de visión (adaptado de \cite{picek2022automatic})}
+\end{figure}
+
+
+En \cite{liu2021survey} se puede encontrar un exhaustivo compendio de todas las referencias existentes hasta el momento relativas a transformadores para visión. Si bien el objetivo principal de la arquitectura de los transformadores es conseguir un tratamiento generalista para datos heterogéneos, no todas las publicaciones existentes van en ese sentido. Así podemos encontrar artículos que modifican los sistemas de atención para conseguir las propiedades de localidad semejantes al de las redes convolucionales mediante el uso de atención local o jerárquica, conceptos que describiremos en el capítulo dedicado a los transformadores multi-modales. Otras utilizan como entrada del transformador, atributos representativos de la imagen procedentes de redes convolucionales pre-entrenadas. Aunque se aleja del objetivo de este módulo el presentar la miriada de variaciones existentes publicadas que están alejadas del espíritu generalista de la arquitectura, realizaremos una presentación general de las propuestas realizadas hasta el momento al respecto. Hay que tener en cuenta que los transformadores, en general, y para visión en particular, son una arquitectura novel, por tanto no madura, que seguro que estará sujeta a grandes innovaciones futuras. Independientemente del interés que pueda suscitar una aplicación particular, el objetivo de este módulo está destinado a explicar aquellas arquitecturas más generalistas que funcionen bien en un amplio abanico de circunstancias. En las secciones que siguen intentaremos presentar aquellas arquitecturas que cumplen ese cometido para las aplicaciones de visión en los campos de clasificación, detección y segmentación. Para aplicaciones más específicas se puede consultar la extensa bibliografía.
+
+
+\subsection{Clasificación}
+
+Hasta el momento se puede decir que hay hasta seis formas distintas de abordar la contribución de los transformadores en la resolución de problemas de clasificación que enumeramos a continuación: 
+
+\begin{enumerate}
+	
+	\item \textit{Adaptación directa de la arquitectura original} \cite{dosovitskiy2020image}. La imagen original se dispone como un conjunto de partes más pequeñas no superpuestas (\textit{patches}) que son tratadas como elementos de una secuencia. 
+	
+	\item \textit{Transformador de atributos procedentes de una red convolucional} \cite{wu2020visual}. Los atributos extraídos de una capa intermedia de una red CNN pre-entrenada son alimentados a un transformador para mejorar sus capacidades de representación. La ventaja de este enfoque es que los elementos de la secuencia inicial ya separan y codifican la información, que es combinada y perfeccionada por el transformador. De esta manera se aprovechan los priores estructurales de la CNN para facilitar el trabajo posterior.
+	
+	\item \textit{Destilación del conocimiento de una convolucional pre-entrenada} \cite{touvron2021training}. Una red CNN actúa como maestra de una red basada en transformadores. El proceso de aprendizaje consigue transferir los sesgos inductivos a la red aprendiz mediante destilación del conocimiento \cite{hinton2015distilling}. Sorprendentemente, la red aprendiz basada en transformadores acaba obteniendo mejores resultados predictivos que los de la red convolucional de la que deriva. 
+	
+	
+	\item \textit{Transformador con atención localizada} \cite{liu2021survey} y \textit{Transformadores jerárquicos} . Es un transformador con módulos de atención adaptados para funcionar de forma localizada. A partir la partición de la imagen de entrada en elementos más pequeños que en ViT original \cite{dosovitskiy2020image} (4x4 en vez de 16x16), estás se alimentan a matrices de auto-atención que combinan únicamente las particiones más próximas. Una vez calculada la atención, se recombina con las atenciones circundantes mediante una capa de fusión. Las capas siguientes aplican el mismo modelo se atención localizada desplazando las particiones combinadas. De esta forma se consigue combinar la información con las zonas adyacentes. En \cite{yuan2021tokens}, \cite{wang2021pyramid} se utilizan aproximaciones similares basadas en un tratamiento jerárquico donde los módulos de atención son modificados para integrar una progresiva reducción del espacio de cálculo.  
+\end{enumerate}
+
+
+En la figura \ref{fig:imagenetclassificationleaderboard} se muestra la evolución temporal del estado del arte para clasificación de imágenes (benchmark Imagenet). Se puede observar como a mediados del 2022 los modelos con mejor rendimiento están basados en transformadores (\textbf{ViT-G/14}, 1843M de parámetros, $91.0\%$ \cite{ding2022davit}) seguido muy de cerca de uno basado en redes convolucionales (\textbf{EfficientNet-L2}, 480M de parámetros, $90.2\%$ \cite{pham2021meta}). Para hacer comparativos los resultados buscamos un transformador con un número similar de parámetros. Encontramos que \textbf{DaViT-H}, con 362M consigue también un $90.2\%$ \cite{ding2022davit}. A partir de estos resultados se puede concluir que la arquitectura de los transformadores, a pesar de no disponer de priores estructurales, consigue obtener resultados de clasificación parejos e incluso mejores de rendimiento respecto a las CNNs más competitivas, con una complejidad computacional similar. En contrapartida cabe indicar que para conseguir estos resultados es necesario someter a las redes de transformadores a procesos de optimización más prolongados y con conjuntos de datos grandes. Una alternativa cuando no se dispone de suficientes datos etiquetados es utilizar una etapa previa de aprendizaje semi-supervisado \cite{weng2021semi}. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{figs/Image-Classification-on-ImageNet.pdf} 
+	\label{fig:imagenetclassificationleaderboard}
+	\caption{Estado del arte de los modelos de clasificación de imagen \cite{imagenetclassificationleaderboard})}
+\end{figure}
+
+
+\subsection{Detección}
+
+Cuando referimos al uso de transformadores para detección en imágenes debemos realizar una distinción de inicio entre las aplicaciones que utilizan un enfoque de transformador de extremo-a-extremo, de aquellas que lo usan únicamente como \textit{backbone} para extracción de atributos pero utilizan un bloque final de detección convencional (por ejemplo \textbf{RetinaNet} \cite{lin2017focal} o \textbf{Mask R-CNN} \cite{he2017mask}). 
+
+Los \textit{backbone} mencionados vienen a ser transformadores pre-entrenados en tareas de clasificación que se utilizan como extractor de atributos para alimentar a un cabezal de detección. Para un compendio de los modelos que utilizan este tipo enfoque se puede consultar la bibliografía \cite{liu2021survey}.
+
+En lo que respecta a los transformadores de extremo-a-extremo, en el momento de la redacción de este capítulo, existen dos paradigmas distintos para abordar el problema de detección: uno sería la familia de modelos derivados de la arquitectura \textbf{DETR} \cite{carion2020end} y el otro basado en modelos derivados de \textbf{Pix2Seq} \cite{chen2021pix2seq}. Estudiamos a continuación las características definitorias de cada uno de ellos.
+
+\subsubsection{\textbf{DETR}: \textbf{DE}tection with \textbf{TR}ansformer}
+
+En la figura \ref{fig:detection-detr} se muestra esquemáticamente la arquitectura de detección \textbf{DETR}. La imagen de entrada se particiona, secuencia y alimenta a un transformador secuencia-a-secuencia. El \textit{tokenizador} está formado por una red convolucional que extrae los atributos de la imagen original para posteriormente entrar en el transformador codificador. La originalidad de esta propuesta viene en la parte de decodificación. Esta, por una lado recibe los datos procedentes de la codificación y por otro, una secuencia de entrada. Esta representa la propuesta de objetos a detectar. A su paso por la red de decodificación se combina con la información de la imagen dando como resultado la secuencia de salida. Si la red ha cumplido su función, la secuencia de salida contendrá la representación interna de la detección de los objetos presentes en la imagen. La secuencia de elementos de salida tiene la misma cardinalidad que la de entrada y alimenta a una red neuronal independiente para cada elemento de la que deriva la clase y el cuadro delimitador los elementos detectados. El tamaño de la secuencia del decodificador determina el número máximo de elementos que es posible detectar. En el artículo original, el número máximo de objetos es de $100$. El modelo prevé una clase especial para indicar la no presencia de objeto para cada posición. En \textbf{DETR} la secuencia de entrada está formada por números aleatorios que sirven como prior para la detección de los objetos. A pesar de la naturaleza aleatoria del prior de \textbf{DETR} los resultados obtenidos son muy buenos. Trabajos publicados posteriormente han intentado mejorar las capacidades predictivas de la red afinando los priores de la secuencia de entrada (\textbf{SMCA} \cite{gao2021fast}, \textbf{Conditional DETR} \cite{meng2021conditional}, \textbf{Anchor DETR} \cite{wang2022anchor}, \textbf{DAB-DETR} \cite{liu2022dab}, \textbf{Efficient DETR} \cite{yao2021efficient}, \textbf{Dynamic DETR} \cite{dai2021dynamic}). 
+
+\begin{figure}[ht!]
+	\centering
+	%	\includegraphics[width=0.5\textwidth]{figs/DETR.png} 
+	\label{fig:detection-detr}
+	\caption{Figura \ref{fig:detection-detr}. Arquitectura del transformador \textbf{DETR} especializado en detección \cite{carion2020end})}
+\end{figure}
+
+
+Un punto clave del diseño de esta arquitectura es el diseño de una función de pérdida que permita la optimización eficiente de la red durante el aprendizaje supervisado, esto es la comparación de los valores predichos con los reales. Para comprender la dificultad del problema, podemos ver el ejemplo indicado en la tabla \ref{table:deteccion-ejemplo-entrada}. Observamos como las clases predichas y reales no necesariamente se van a encontrar en la misma posición. Además, el ordenamiento de las predicciones tampoco garantiza la coincidencia, pues  será frecuente el caso en que el modelo no sea capaz de predecir todos los elementos o que lo haga de forma errónea. Este problema se resuelve calculando la función de pérdida para todas las agrupaciones posibles entre valores verdaderos y predichos, escogiendo aquella combinación donde la pérdida es menor. \cite{carion2020end}, \cite{stewart2016end}.
+
+\begin{table}[ht]
+	\centering
+		\begin{tabular}{ c | c | c | c | c | c}
+			\hline %\rowcolor[gray]{0.8}
+			%% header
+			\multicolumn{3}{c}{\textbf{Real}} & \multicolumn{3}{c}{\textbf{Predicho}} \\
+			\hline
+			Clase & Desde & Hasta & Clase & Desde & Hasta\\
+			\hline
+			vaso & (100, 200) & (200, 300) & sin objeto & (20, 40) & (10,0)\\			
+			\hline
+			botella & (300, 200) & (400, 300) & vaso & (98, 198) & (210,310)\\			
+			\hline
+			bol & (100, 200) & (200, 300) & sin objeto & (20, 40) & (10,0)\\			
+			\hline
+			portátil & (100, 200) & (200, 300) & sin objeto & (20, 40) & (10,0)\\			
+			\hline
+			ratón & (100, 200) & (200, 300) & sin objeto & (20, 40) & (10,0)\\			
+			\hline
+			silla & (500, 400) & (700, 500) & bolsa & (460, 560) & (510, 599)\\			
+			\hline
+			bolsa & (450, 550) & (500, 600) & sin objeto & (20, 40) & (10,0)\\			
+			\hline
+			sin objeto & (0, 0) & (0, 0) & sin objeto & (20, 40) & (10,0)\\			
+			\hline
+			sin objeto & (0, 0) & (0, 0) & botella & (20, 40) & (10,0)\\			
+			\hline
+			sin objeto & (0, 0) & (0, 0) & sin objeto & (20, 40) & (10,0)\\			
+			\hline
+		\end{tabular}
+	\caption{Ejemplo de valor real y predicho en una red de detección}
+	\label{table:deteccion-ejemplo-entrada}
+\end{table}
+
+La función de pérdida calculada con el emparejamiento bipartito es la que se muestra en la ecuación \ref{eq:detr-loss}.
+
+\begin{equation}
+	\begin{array}{c}  
+		\hat{\sigma} = \underset{\sigma \in \mathcal{G}_N}{\mathrm{argmin}}  \sum\limits_{i}^{N} \mathcal{L}_{match}(y_i, \hat{y}_{\sigma(i)}),\\
+		\mathcal{L}_{match}(y_i, \hat{y}_{\sigma(i)}) = - \mathbb{1}_{\{c_i \ne \emptyset\}} \hat{p}_{\sigma(i)}(c_i) + \mathbb{1}_{\{c_i \ne \emptyset\}} \mathcal{L}_{box}(b_i,\hat{b}_{\sigma(i)})
+	\end{array}
+	\label{eq:detr-loss}
+\end{equation}
+
+Una vez hecho el emparejamiento óptimo, para llevar a cabo la optimización de la red, se utiliza la función de pérdida húngara (eq. \ref{eq:hungarian-loss}).
+
+\begin{equation}
+	\mathcal{L}_{H}(y_i, \hat{y}_{\sigma(i)}) = \sum\limits_{i=1}^N [- log \hat{p}_{\hat{\sigma}_i} (c_i) + \mathbb{1}_{\{c_i \ne \emptyset\}}  \mathcal{L}_{box}(b_i,\hat{b}_{\sigma(i)})]
+	\label{eq:hungarian-loss}
+\end{equation}
+
+
+\subsubsection{\textbf{Pix2Seq}}
+
+En la figura \ref{fig:detection-pix2seq} se muestra un esquema del funcionamiento de \textbf{Pix2Seq}. Utiliza un nuevo paradigma consistente en un mapeo directo entre la imagen a tratar y la salida de secuencia de texto, donde se codifican clase y cuadro delimitador de todos los elementos detectados. Es una solución elegante con resultados de rendimiento similares a los obtenidos por \textbf{DETR} e incluso en algunas circunstancias mejores (por ejemplo en la detección de objetos pequeños). 
+
+Utiliza una red de transformadores formada por codificadores y decodificadores resolviendo de forma auto-regresiva. La parte de codificación puede ser o bien un transformador o una red convolucional. El codificador extrae los atributos de interés de la imagen para alimentarlos a la red de decodificadores que los convierten junto con los comandos procedentes de la secuencia de entrada en una salida textual. Se genera un elemento cada vez condicionado a los atributos suministrador por el codificador y a los elementos de la secuencia generados hasta el momento.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figs/pix2seq.png} 
+	\label{fig:detection-pix2seq}
+	\caption{Tipología de E/S del transformador \textbf{Pix2Seq} especializado en detección \cite{carion2020end})}
+\end{figure}
+
+
+La naturaleza textual de la salida simplifica los cálculos requeridos de la función de pérdida con respecto a \textbf{DETR}. El formato esperado de la salida es un conjunto de elementos de la forma [x\_min], [y\_min], [x\_max], [y\_max], [clase], ... [EOS], donde EOS sería el indicador de final de secuencia que aparece después de la salida de todos los cajetines delimitadores presentes en la imagen. Durante el entrenamiento la ordenación de los elementos en la secuencia de predicción se hace de forma aleatoria. Se optimiza mediante la función de pérdida típica de log-likelihood utilizada por los transformadores auto-regresivos de NLP (eq. \ref{eq:loglikelihood}).
+
+\begin{equation}
+	\mathrm{max} \sum\limits_{j=1}^L \boldsymbol{\omega}_j log P(\tilde{\boldsymbol{y}}_j \mid \boldsymbol{x}, \boldsymbol{y}_{1:j-1})
+	\label{eq:loglikelihood}
+\end{equation}
+
+donde $\boldsymbol{x}$ es una imagen determinada, $\boldsymbol{y}$ y $\tilde{\boldsymbol{y}}$ las secuencias de entrada y objetivo respectivamente asociadas con $\boldsymbol{x}$ y $L$ la longitud de la secuencia. $\boldsymbol{\omega}_j$ es un peso preestablecido para el elemento j de la secuencia. En el caso de \textbf{Pix2Seq}, $\boldsymbol{\omega}_j = 1,  \forall j$
+
+\subsection{Segmentación}
+
+Segmentación es el término genérico que se utiliza para referirse en realidad a tres problemas distintos: \textit{segmentación semántica}, \textit{segmentación de instancias} y \textit{segmentación panóptica}. La \textit{segmentación semántica} es el problema consistente en asignar a cada píxel de una imagen una clase. Este tipo de segmentación es el más sencillo pues no requiere de la separación entre objetos distintos pertenecientes a una misma clase.  En la \textit{segmentación panóptica} y en la \textit{segmentación de instancias} el objetivo es más complejo pues, no únicamente pretenden separar clases sino también objetos. La diferencia entre ambas es que la panóptica identifica cada píxel con una única clase, mientras que la de instancias permite que un píxel esté asociado a más de una clase, teniendo en cuenta la superposición de objetos.
+
+Las propuestas para resolver los problemas de segmentación utilizando transformadores han estado y están sometidos a una profunda evolución. Podemos distinguir entre dos enfoques: por un lado la segmentación directa a partir de la información de los píxeles de la imagen y por otra la construcción de representaciones internas basadas en objetos, para inferir posteriormente las máscaras de segmentación.
+
+Las propuestas iniciales basadas en el método directo son una extensión del ViT para la resolución de tareas de segmentación (véase \textbf{SETR} \cite{zheng2021rethinking}). Esta primera aproximación sirvió para demostrar la viabilidad de la arquitectura para la resolución de este tipo de problemas, aunque con unos costes computacionales elevados. Posteriormente, se presentaron propuestas basadas en la representación interna de objetos con arquitecturas derivadas de la arquitectura de detección \textbf{DETR} presentada en la sección anterior. Las primeras propuestas requerían de clase, cuadro delimitador y máscara. Las posteriores son capaces de derivar máscara y clase directamente sin la necesidad de cuadro delimitador. Presentaremos en esta sección la arquitectura \textbf{Mask2Former} \cite{cheng2022masked}, como un ejemplo de una arquitectura madura que permite resolver con una única arquitectura las tres tareas segmentación: semántica, de instancias y panóptica. 
+
+En la figura \ref{fig:segmentation-maskformer} se muestra el esquema representativo del transformador de segmentación \textbf{MaskFormer} (válido también para \textbf{Mask2Former}). 
+
+\begin{figure}[ht!]
+	\centering
+	%\includegraphics[width=0.5\textwidth]{figs/MaskFormer.png} 
+	\label{fig:segmentation-maskformer}
+	\caption{Transformador MaskFormer. Arquitectura especializada en segmentación de imágenes. \cite{cheng2021per})}
+\end{figure}
+
+Podemos observar que consta de un \textit{backbone}, que puede ser tanto una red convolucional o como un ViT, del que se extraen los atributos representativos de la imagen. Éstos se alimentan a un  decodificador de píxeles y a un transformador decodificador. El decodificador de píxeles es una FPN (Feature Pyramid Network) \cite{lin2017feature}, pero podría ser cualquier otra arquitectura que sea capaz de transformar atributos a imagen (ejemplo alternativo podría ser una U-NET \cite{ronneberger2015u}). El transformador decodificador, al estilo del \textbf{DETR} genera una secuencia de salida a partir de una secuencia de entrada utilizando la representación interna de los objetos presentes en la imagen procedente del \textit{backbone}. A partir de la misma, un MLP que genera la predicción de clases para cada objeto así como una representación interna de la máscara, que combinada con la información procedente de la salida del descodificador de píxeles, da como resultado las predicciones de las máscaras para cada uno de los objetos. Al igual que con \textbf{DETR} existe una clase especial para identificar aquellas clases en las que no se ha detectado objeto y para las que, por tanto, la segmentación reportada no debe tenerse en cuenta. El número máximo de máscaras que la red es capaz de detectar es un valor de diseño de la arquitectura y está limitado por el tamaño de la secuencia de objetos.
+
+\section{Transformadores para Audio}
+
+Los transformadores también se están convirtiendo en el estándar de facto para el tratamiento de señales de audio, espacio hasta el momento ocupado por las redes convolucionales y anteriormente por la redes recurrentes. Las posibilidades en este campo son muy amplias y diversas. La arquitectura usada es la misma que en las aplicaciones anteriormente presentadas para otro tipo de señales, siendo el hecho distintivo el tokenizador utilizado para transformar la señal de entrada en una representación interna manejable por la red.
+
+\subsection{Señales de audio, tratamiento y tokenización}
+
+Las entradas de texto e imagen son tipos de datos más intuitivos de aprehender. Para el caso del sonido parece más complejo el modo de expresión numérica. Realizaremos una explicación de la naturaleza de las señales de audio para intentar comprender mejor cómo se realiza la preparación para su utilización en aplicaciones de predicción automática.
+
+Una señal viene a ser la evolución temporal de una variable física que puede ser medida. En el caso del audio estaríamos refiriéndonos a variaciones de la presión del aire en un determinado punto. Para tratar digitalmente estas señales es necesario, primeramente el almacenarlas. Esto se hace inicialmente capturando esta información temporal realizando un muestreo, esto es, registrando el valor de la propiedad física con una frecuencia pre-establecida. Esta frecuencia de muestreo puede variar, pero un valor habitual para sonido puede ser, por ejemplo, $\SI{44.1}{kHz}$, esto es $44100$ muestras por segundo. Una vez capturada esta información, se dispone de la representación digital de la señal de audio y se está en condiciones de ser tratarla digitalmente.
+
+Del análisis matemático conocemos el Teorema de Fourier que viene a decir que toda señal periódica definida en un intervalo temporal finito, independientemente de su forma, puede ser aproximada por la suma de señales senoidales. Cada una de estas señales constituyentes está definida por únicamente dos variables: amplitud y frecuencia. Dichas variables pueden ser mostradas gráficamente en lo que se denomina un espectro de frecuencias. Así es posible representar la misma señal de dos formas distintas: atendiendo al dominio temporal o al dominio de frecuencia. A la transformación entre un dominio y el otro se la denomina Transformada de Fourier \cite{bracewell1986fourier}. El algoritmo FFT (Fast Fourier Transform) \cite{nussbaumer1981fast} permite llevar a cabo de manera eficiente dicha transformación en un entorno digital.
+
+Lo presentado hasta ahora aplica a señales periódicas, pero el habla o la música no son periódicas, ¿qué ocurre entonces en estos casos? La solución pasa por definir una longitud de ventana en la que se trata la señal como periódica y para la cual se calcula su espectro. Llevando a cabo este cálculo para ventanas consecutivas superpuestas, obtenemos una representación en dominio de frecuencia de la señal no periódica. A este gráfico se le denomina espectrograma. El espectrograma grafica Frecuencia vs Tiempo. Cada punto del mismo se representa la amplitud en color en decibelios. Los decibelios vienen a representar la amplitud en escala logarítmica. Se utiliza dicha escala debido a que la percepción de los cambios de sonido en humanos está más alineada con ese orden de escala.
+
+Al igual que pasa con la amplitud, los humanos no percibimos las frecuencias de manera lineal. Nuestro oído está mejor adaptado a percibir las diferencias para bajas frecuencias (sonidos graves). Una persona sana es capaz de distinguir sin problemas la diferencia entre una señal a $\SI{500}{Hz}$ de una de $\SI{1000}{Hz}$, pero le será mucho más difícil hacerlo entre una de $\SI{10000}{Hz}$ y una de $\SI{10500}{Hz}$ a pesar de que la diferencia entre ambas es la misma. En 1937 se propuso la escala de MEL \cite{stevens1937scale} que pretendía linealizar la percepción de la diferencia frecuencias introduciendo una nueva unidad denominada pitch de MEL. El gráfico resultante de representar la amplitud en decibelios en un gráfico bidimensional de pitch vs tiempo es más representativo, linealmente, de la percepción del sentido del oído en el ser humano. A este gráfico se le denomina Espectrograma de MEL. Suele ser el espectrograma más habitual en los modelos de aprendizaje automático. La linealidad del gráfico con la percepción auditiva humana enfatiza la información relevante y facilita el procesamiento posterior de la señal.
+
+Llegados a este punto podemos entender que una de las representaciones más habituales de las señales de audio para el aprendizaje automático sea el Espectrograma de MEL. Al ser una matriz de dos dimensiones que suele tener un tamaño mayor del gestionable directamente por el transformador, un tokenizador habitual (otros también son posibles) consiste en aplicar convoluciones que reduzcan su tamaño al espacio interno de la arquitectura. 
+
+\subsection{Ejemplos de transformadores de audio}
+
+A continuación se presenta una muestra de las muchas otras aplicaciones de audio que utilizan transformadores:
+
+\begin{itemize}
+	\item \textbf{Whisper} \cite{radfordrobust} Es un transformador secuencia-a-secuencia multi-lenguaje que a partir de una fuente de audio que contenga una conversación, devuelve la secuencia de texto asociada.
+	\item \textbf{Wav2Vec 2.0} \cite{baevski2020wav2vec} Es un transformador con una finalidad similar a BERT pero que en vez de utilizar secuencias de texto trabaja directamente con secuencias de audio. Utiliza una red convolucional como codificador de atributos que posteriormente se alimentan al transformador. Realiza un aprendizaje no supervisado para obtener representaciones internas de secuencias de audio. El modelo puede ser posteriormente afinado con relativamente pocos datos para resolver problemas específicos. 
+	\item \textbf{SepFormer} \cite{subakan2021attention} Es una red de transformadores especializada en la separación de voces de una fuente de audio.
+\end{itemize}
+
+
+\section{Transformadores multi-modales}
+
+Hasta ahora hemos visto la potencialidad de los transformadores para el aprendizaje automático utilizando datos de una única naturaleza. Debido a sus capacidades generalistas para resolver problemas de áreas hasta ahora inconexas es lógico hipotetizar que dicha arquitectura potencialmente puede ser capaz de gestionar problemas que requieran entradas de distinta naturaleza al mismo tiempo. Un ejemplo claro de agente de este tipo son los animales y las personas, que integran información procedente de hasta cinco sentidos distintos.
+
+Las arquitecturas multi-modales son aquellas capaces de gestionar entradas de distinta naturaleza, por ejemplo imagen y texto. 
+
+Desde el punto de vista de la geometría topológica, el espacio generado por la arquitectura de los transformadores es equivalente a de un grafo completamente conectado \cite{bronstein2021geometric}. Esto no es así en otras arquitecturas, donde las interconexiones del grafo están limitadas a su espacio más restringido. Los transformadores, por tanto, disponen de un espacio de modelado más general y flexible \cite{xu2022multimodal}. Esto representa una ventaja cuando se requiere combinar entradas de distinta naturaleza. Los priores estructurales que pueden ser útiles para facilitar la optimización para un determinado tipo de datos, pueden ser un inconveniente cuando se usan junto con otras entradas de distinta naturaleza.
+
+A continuación se describen los puntos diferenciales que existen entre una arquitectura multi-modal y la tradicional.
+
+\subsection{Entradas multi-modales}
+
+La primera función que realiza un transformador es la conversión de los datos de entrada en un tensor de dimensión interna definida, que se mantiene constante en su avance por las distintas capas. La \textit{tokenización}, transforma los elementos de entrada en un vector intermedio al que posteriormente se le aplica una transformación matemática que, normalmente reduce su dimensiones con objetivo de alcanzar las internas de proceso. En entradas textuales es habitual utilizar un \textit{tokenizador} que convierte cada elemento de la cadena de entrada en un vector ortogonal de dimensión igual a la del diccionario. Esta operación es seguida de una transformación lineal con el objetivo de alcanzar la dimensión interna de trabajo. En el caso de imagen, una estrategia consiste en \textit{tokenizar} mediante la partición de la imagen en partes no superpuestas de tamaño predefinido, seguido de una transformación lineal de la misma para alcanzar la dimensión de trabajo \cite{dosovitskiy2020image}. Otro tipo de estrategias de \textit{tokenización} consisten en el uso de redes especializadas para derivar atributos que son alimentados al transformador \cite{lu2019vilbert}. En el caso del video, existen diversas estrategias: en \cite{sun2019videobert} la tokenización consiste en seleccionar clips de duración predeterminada, a unos fps pre-establecidos a los que seguidamente se les pasa a través de una red convolucional tridimensional para generar unos atributos que son posteriormente adaptados hasta conseguir las dimensiones internas de trabajo. Otras estrategias publicadas incluyen la tokenización mediante selección en los clips de puntos tridimensionales de interés seguida por una transformación lineal \cite{akbari2021vatt}; tokenización en mediante la partición de las imágenes integrantes aplicada al conjunto del clip seguida de una proyección lineal \cite{nagrani2021attention}; entre otros. En el caso del audio, se pueden utilizar también distintas estrategias que dependen en parte del objetivo que se pretende conseguir. Una de ellas consiste, como hemos descrito anteriormente, en utilizar el espectograma MEL (u otros derivados) seguido de una proyección lineal o del cálculo de atributos mediante una red convolucional \cite{lin2021exploring}, \cite{akbari2021vatt}, \cite{nagrani2021attention}. En la bibliografía \cite{xu2022multimodal} se pueden encontrar ejemplos de módulos preparatorios para otro tipo de datos más específicos como podrían ser esquemas de bases de datos SQL, nubes de puntos tridimensionales, datos tabulares, poses humanas, registros electrónicos de salud, conjunto de órdenes posibles a las que responde un robot, entre otros muchos.
+
+\subsection{Variantes de auto-atención en un contexto multi-modal}
+
+Una vez se dispone de la representación interna de las distintas señales de entrada, se plantea el dilema de cómo encontrar el modo más efectivo de combinarlas en la capa de auto-atención para obtener los mejores resultados. A pesar de que puedan tener la mismas dimensiones, debido a su diferente naturaleza, puede ser necesario adaptar las transformaciones a cada uno de los distintos modos. Las estrategias más habituales para calcular la auto-atención en esta primera etapa son: la suma temprana, la concatenación temprana, la jerárquica y la cruzada. 
+
+La \textit{suma temprana} (fig. \ref{fig:att-sum}) consiste en la suma de los vectores procedentes de las distintas fuentes como paso previo a un único sistema de auto-atención común. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.3\textwidth]{figs/early\_summation\_attention.pdf} 
+	\label{fig:att-sum}
+	\caption{Atención por suma temprana. La información procedente de dos canales distintos se suma antes de ser procesada por el canal de auto-atención}
+\end{figure}
+
+La \textit{concatenación temprana} (fig. \ref{fig:att-concat}) genera un vector como concatenación de los distintos modos que se alimenta al módulo de auto-atención. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figs/early\_concatenation\_attention.pdf} 
+	\label{fig:att-concat}
+	\caption{Atención por concatenación. La información procedente de dos canales distintos se procesa en la misma capa de auto-atención}
+\end{figure}
+
+La \textit{auto-atención jerárquica} (fig. \ref{fig:att-jer} y \ref{fig:att-jer2}) se realiza en dos pasos, en uno se aplican transformaciones distintas a cada señal y en el otro una única que las combina. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figs/hierarchical\_attention.pdf} 
+	\label{fig:att-jer}
+	\caption{Atención jerárquica multi-canal a mono-canal. La información procedente de canales distintos se procesa en una primera etapa en canales de atención independientes para posteriomente procesarse en conjunto en la etapa final.}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figs/hierarchical\_attention\_2.pdf} 
+	\label{fig:att-jer2}
+	\caption{Atención jerárquica mono-canal a multi-canal. La información procedente de canales distintos se procesa en una primera etapa en conjunto para posteriomente procesarse en la etapa final de manera independiente.}
+\end{figure}
+
+
+La \textit{auto-atención cruzada} (fig. \ref{fig:cross-concat}) utiliza canales de auto-atención independientes donde la matriz de Query de los canales actúa sobre el otro canal y no sobre el propio. 
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.5\textwidth]{figs/cross\_attention.pdf} 
+	\label{fig:cross-concat}
+	\caption{Atención cruzada. La información procedente de dos canales distintos se procesa en la misma capa de auto-atención}
+\end{figure}
+
+
+La \textit{auto-atención cruzada seguida de concatenación} (fig. \ref{fig:cross-concat2}) actúa en dos fases, una primera en que se aplica una auto-atención cruzada y posteriormente se aplica una auto-atención convencional sobre la concatenación de los vectores procedentes de la operación original.
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=0.6\textwidth]{figs/cross\_attention2.pdf} 
+	\label{fig:cross-concat2}
+	\caption{Atención cruzada seguida de concatenación. La información procedente de dos canales distintos se procesa en la misma capa de auto-atención y posteriormente es combinada en un canal único.}
+\end{figure} 
+
+
+\begin{table}[ht!]
+	\centering
+	\begin{tabular}{ l | c | c}
+			\hline %\rowcolor[gray]{0.8}
+			%% header
+			\textbf{Auto-atención} & \textbf{Formulación} & Referencias\\
+			\hline
+			Suma temprana & $\boldsymbol{Z} \leftarrow Tf(\alpha \boldsymbol{Z}_{(A)} \bigoplus \beta \boldsymbol{Z}_{(B)})$ & \cite{gavrilyuk2020actor}\\
+			&&\cite{xu2021deepchange}\\
+			\hline
+			Concatenación temprana & $\boldsymbol{Z} \leftarrow Tf(\mathcal{C} (\boldsymbol{Z}_{(A)}, \boldsymbol{Z}_{(B)})$ & \cite{sun2019videobert}\\
+			&&\cite{guo2020graphcodebert}\\
+			&&\cite{shi2022learning}\\
+			&&\cite{zheng2021fused}\\
+			\hline
+			Jerárquica multi $\rightarrow$ mono-canal & $\boldsymbol{Z} \leftarrow Tf_3(\mathcal{C}( Tf_1(\boldsymbol{Z}_{(A)}), Tf_2(\boldsymbol{Z}_{(B)}))$ & \cite{li2021ai}\\	
+			\hline	
+			Jerárquica mono $\rightarrow$ multi-canal & $\Bigg\{ \begin{array}{c} \boldsymbol{Z}_{(A)} \leftarrow Tf_2(Tf_1(\mathcal{C} (\boldsymbol{Z}_{(A)}, \boldsymbol{Z}_{(B)})))\\\boldsymbol{Z}_{(B)} \leftarrow Tf_3(Tf_1(\mathcal{C} (\boldsymbol{Z}_{(A)}, \boldsymbol{Z}_{(B)})))\end{array}$& \cite{lin2020interbert}\\	
+			\hline	
+			Cruzada & $\Bigg\{ \begin{array}{c} \boldsymbol{Z}_{(A)} \leftarrow MHSA(\boldsymbol{Q_B}, \boldsymbol{K_A}, \boldsymbol{V_A}) \\\boldsymbol{Z}_{(B)} \leftarrow MHSA(\boldsymbol{Q_A}, \boldsymbol{K_B}, \boldsymbol{V_B}) \end{array}$ & \cite{lu2019vilbert}\\
+			&&\cite{yun2021pano}\\
+			\hline
+			Cruzada más concatenación & $\Bigg\{ \begin{array}{c} \boldsymbol{Z}_{(A)} \leftarrow MHSA(\boldsymbol{Q_B}, \boldsymbol{K_A}, \boldsymbol{V_A}) \\\boldsymbol{Z}_{(B)} \leftarrow MHSA(\boldsymbol{Q_A}, \boldsymbol{K_B}, \boldsymbol{V_B}) \\ \boldsymbol{Z} \leftarrow Tf(\mathcal{C}(\boldsymbol{Z}_{(A)}, \boldsymbol{Z}_{(B)})) \end{array}$&\cite{hasan2021humor}\\	
+			&&\cite{zhan2021product1m}\\
+			&&\cite{tsai2019multimodal}\\	
+			\hline
+		\end{tabular}
+	\caption{Variantes de auto-atención de interacción/fusión de canales multi-modales. $\alpha$ y $\beta$ son pesos. Att: Atención; $\mathcal{C}$ : Concatenación; Tfs: Capas de transformador. $N_{(A)}$ y $N_{(B)}$ longitudes de secuencia de dos canales A y B de distinto modo. $MHSA(\boldsymbol{Q}, \boldsymbol{K}, \boldsymbol{V})$ Función de auto-atención multicabezal}
+	\label{table:auto-atencion-variantes}
+\end{table}
+
+\subsection{Arquitecturas multi-modales}
+
+El objetivo de estas estrategias es la consecución de una representación interna que integre de la manera más adecuada posible la información relevante procedente de cada uno de los modos de entrada. El sistema de auto-atención escogido determina las características de la arquitectura. Así hablamos de arquitecturas de \textit{canal único}, \textit{multi-canal} o \textit{híbridas}. Las arquitecturas de \textit{canal único} son las derivadas del uso de los sistemas de auto-atención de \textit{suma} y \textit{concatenación temprana} y disponen de un canal de tratamiento único de los datos. Las arquitecturas \textit{multi-canal} son las derivadas del uso de los sistemas de auto-atención \textit{cruzada} y dan lugar a canales múltiples de tratamiento diferenciado de los datos. Finalmente, las arquitecturas \textit{híbridas}, derivadas de sistemas de auto-atención \textit{jerárquica} y \textit{cruzada con concatenación} combinan partes de las dos anteriores.
+
+\section{Aplicaciones de los transformadores multi-modales}
+
+En esta sección podremos algunos de los trabajos publicados hasta el momento que utilizan transformadores multi-modales.
+
+\begin{itemize}
+	\item  \textbf{MMBT} \cite{kiela2019supervised} es una arquitectura multi-modal que integra imagen y texto para obtener una representación interna que puede ser utilizada para realizar tareas de clasificación.
+	
+	\item \textbf{VideoBERT} \cite{sun2019videobert} es una arquitectura multi-modal con una finalidad similar a BERT pero utilizando video como fuente de datos.
+	
+	\item \textbf{Med-BERT} \cite{rasmy2021med} una arquitectura multi-modal que utiliza registro de salud estructurados para representación de la salud de pacientes y a partir de la misma poder predecir enfermedades.
+	
+	\item \textbf{Gato} \cite{reed2022generalist} es una arquitectura multi-modal con un objeto generalista. A partir de datos procedentes de diversas fuentes: imagen, texto y acciones propias de un robot es capaz de resolver hasta 604 tareas distintas, entre las cuales se encuentran jugar a multitud de juegos de Atari, hacer de chatbot, comandar un brazo articulado, etiquetar el contenido de una imagen, entre otras muchas. Todo ello utilizando una única arquitectura basada en transformadores. Es la primera aplicación generalista que integra imagen, procesamiento del lenguaje natural, aprendizaje por refuerzo y control de robots en un único agente.
+\end{itemize}
+
+%%%%%%%%
+% RESUM %
+%%%%%%%%
+\newpage
+\section{Resumen}
+
+En este módulo hemos presentado la arquitectura de red neuronal Transformadores, la cual tiene la capacidad de reemplazar a arquitecturas especializadas como redes convolucionales, recurrentes y de grafos. Esta arquitectura no solo puede funcionar en el campo específico del procesamiento del lenguaje natural, para el cual fue diseñada originalmente, sino que también ha demostrado funcionar al máximo nivel para el tratamiento de otro tipo de señales específicas, así como para la resolución de problemas que combinan datos de distintas fuentes, lo que la convierte en un agente generalista para la resolución de problemas. 
+
+La arquitectura de los Transformadores ha demostrado funcionar muy bien en áreas como la visión por computador, el procesamiento del lenguaje natural, el tratamiento de señales de audio, la predicción de series temporales y el aprendizaje por refuerzo, entre otras.
+
+En el módulo se ha presentado una descripción rigurosa del algoritmo de la arquitectura y se han mostrado aplicaciones en distintas áreas, desde su aplicación de origen en el procesamiento del lenguaje natural, el procesamiento de imágenes y sonidos y hasta su uso en aplicaciones multi-modales.
+
+Conocer los detalles de implementación de la arquitectura de los Transformadores es de gran importancia, ya que puede ser una solución general para la mayoría de los problemas de ciencia de datos.
+
+\newpage
+\section*{Notación}
+
+La notación matemática de este módulo es la misma que la utilizada en \cite{phuong2022formal}. A efectos prácticos la reproducimos a continuación.
+
+\begin{tabular}{ l  l  l }
+	\hline %\rowcolor[gray]{0.8}
+	%% header
+	\textbf{Símbolo} & \textbf{Tipo} & \textbf{Explicación} \\
+	\hline
+	$[N]$ & $:= \lbrace 1,..., N\rbrace$ & conjunto de enteros $1, 2, ..., N - 1, N$ \\
+	$i, j$ & $\in \mathbb{N}$ & índices enteros genéricos \\
+	$V$ & $\cong [N_V]$ & vocabulario \\
+	$N_V$ & $ \in \mathbb{N}$ & tamaño del vocabulario \\
+	$V^*$ & $ = \bigcup_{\ell=0}^{\infty} V^{\ell}$ & conjunto de secuencias de tokens; p.e. palabras y documentos \\
+	$\ell_{max}$ & $\in \mathbb{N}$ & longitud máxima de la secuencia de tokens\\
+	$\ell$ & $\in [ \ell_{max} ] $ & longitud de la secuencia de tokens\\
+	$t$ & $ \in [ \ell ] $ & índice del token dentro de una secuencia\\
+	$d_{...}$ & $\in \mathbb{N}$ & dimensión de varios vectores\\
+	$\mathbf{x}$ & $\equiv x[1 : \ell ]$ & $\equiv x[1]x[2]...x[\ell] \in V^\ell $ secuencia de tokens primaria\\
+	$\mathbf{z}$ & $\equiv z[1 : \ell ]$ & $\equiv z[1]z[2]...z[\ell] \in V^\ell $ secuencia de tokens de contexto\\
+	$M[i,j]$ & $ \in \mathbb{R}$ & entrada $M_{i,j}$ de la matriz $M \in \mathbb{R}^{d \times d'}$\\
+	$M[i,:] \equiv M[i]$ & $ \in \mathbb{R}^{d'}$ & fila $i$ de la matriz $M \in \mathbb{R}^{d \times d'}$\\
+	$M[:,j]$ & $ \in \mathbb{R}^{d}$ & columna $j$ de la matriz $M \in \mathbb{R}^{d \times d'}$\\
+	$\mathbf{e}$ & $\mathbb{R}^{d_e}$ & representación vectorial / representación vectorial (embedding) de un token\\
+	$\mathbf{X}$ & $\mathbb{R}^{d_e \times \ell_\mathcal{X}}$ & codificación de la secuencia de tokens primaria \\
+	$\mathbf{Z}$ & $\mathbb{R}^{d_e \times \ell_\mathcal{Z}}$ & codificación de la secuencia de tokens de contexto \\
+	$\mathbf{Mask}$& $\mathbb{R}^{\ell_\mathcal{Z} \times \ell_\mathcal{X}}$ & matriz de enmascarado, determina el contexto de atención para cada token\\
+	$L, L_{enc}, L_{dec}$ & $\mathbb{N}$ & número de capas de red (codificación y decodificación)\\
+	$l$&$\in [L]$ &índice de la capa de la red\\
+	$H$ & $\mathbb{N}$ & número de cabezales de atención\\
+	$h$ & $\in [H]$ & índice del cabezal de atención\\
+	$N_{data}$ & $\in \mathbb{N}$& (i.i.d.) tamañp de la muestra\\
+	$n$ & $\in [N_{data}]$ & índice de la secuencia de muestra\\
+	$\eta$&$\in (0, \infty)$ & ratio de aprendizaje\\
+	$\tau$&$\in (0, \infty)$ & temperatura, controla la diversidad en tiempo de inferencia\\
+\end{tabular}
+
+\begin{tabular}{ l  l  l }
+	\hline %\rowcolor[gray]{0.8}
+	%% header
+	\textbf{Símbolo} & \textbf{Tipo} & \textbf{Explicación} \\
+	\hline
+	$\mathbf{W_e}$&$\in \mathbb{R}^{d_e \times N_V}$& matriz de embeddings de los tokens\\
+	$\mathbf{W_p}$&$\in \mathbb{R}^{d_e \times \ell_{max}}$& matriz de embeddings de posición\\
+	$\mathbf{W_u}$&$\in \mathbb{R}^{N_V \times d_e}$& matriz de conversión de embedding a token\\
+	$\mathbf{W_q}$&$\in \mathbb{R}^{d_{attn} \times d_{\mathcal{X}}}$& parámetros de la matriz de consulta\\
+	$\mathbf{b_q}$&$\in \mathbb{R}^{d_{attn}}$& sesgo de consulta\\
+	$\mathbf{W_k}$&$\in \mathbb{R}^{d_{attn} \times d_{\mathcal{Z}}}$& parámetros de la matriz de clave\\
+	$\mathbf{b_k}$&$\in \mathbb{R}^{d_{attn}}$& sesgo de clave\\
+	$\mathbf{W_v}$&$\in \mathbb{R}^{d_{out} \times d_{\mathcal{Z}}}$& parámetros de la matriz de valor\\
+	$\mathbf{b_v}$&$\in \mathbb{R}^{d_{attn}}$& sesgo de valor\\
+	$\mathbf{W_{qkv}}$ & & colección de parámetros de una capa de atención \\
+	$\mathbf{W_o}$&$\in \mathbb{R}^{d_{out} \times Hd_{mid}}$& parámetros de la matriz de salida\\
+	$\mathbf{b_o}$&$\in \mathbb{R}^{d_{out}}$& sesgo de salida\\
+	$\mathbf{W}$& & colección de parámetros de una capa de multi-atención\\
+	$\mathbf{W_{mlp}}$&$\in \mathbb{R}^{d_1 \times d_2}$& parámetros de una MLP del transformador\\
+	$\mathbf{b_{mlp}}$&$\in \mathbb{R}^{d_1}$& sesgo correspondiente a una MLP del transformador\\
+	$\mathbf{\gamma}$&$\in \mathbb{R}^{d_e}$&parámetro de escalado de la capa de normalización\\
+	$\mathbf{\beta}$&$\in \mathbb{R}^{d_e}$&parámetro de offset de la capa de normalización\\
+	$\mathbf{\theta}, \mathbf{\hat{\theta}}$&$\in \mathbb{R}^{d}$&colección de todos los parámetros del transformador\\
+\end{tabular}
+
+\newpage
+
+\bibliographystyle{unsrtnat}
+\bibliography{transformadores}  %%% Uncomment this line and comment out the ``thebibliography'' section below to use the external .bib file (using bibtex) .
+
+\end{document}

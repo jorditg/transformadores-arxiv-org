@@ -1,0 +1,60 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{fixltx2e}
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{positioning}
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5pt}%
+%%%>
+\begin{document}
+	\pagestyle{empty}
+	
+	% define colors
+	\definecolor{mask_color}{RGB}{252,224,225}
+	\definecolor{scale_color}{RGB}{242,243,193}
+	\definecolor{softmax_color}{RGB}{203,231,207}
+	\definecolor{matmul_color}{RGB}{220,223,240}
+	
+	
+	% Define block styles
+	\tikzstyle{matmul_style} = [rectangle, draw, fill=matmul_color, 
+	text width=10em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{softmax_style} = [rectangle, draw, fill=softmax_color, 
+	text width=10em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{mask_style} = [rectangle, draw, fill=mask_color, 
+	text width=10em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{scale_style} = [rectangle, draw, fill=scale_color, 
+	text width=10em, text centered, rounded corners, minimum height=4em]
+	
+	
+	\tikzstyle{line} = [draw, -latex']
+	
+	\begin{tikzpicture}[align=center,node distance = 2cm, auto]
+		% Place nodes
+		
+		\node[text width=2.5cm, anchor=south, align=center] (init) at (1, 0) {};
+		\node[text width=2.5cm, anchor=south, align=center] (Q) at (0, 0) {Q};
+		\node[text width=2.5cm, anchor=south, align=center] (K) at (2, 0) {K};
+		\node[text width=2.5cm, anchor=south, align=center] (V) at (4, 0) {V};
+		\node [matmul_style, below of=init, node distance=1.5cm] (matmul1) {Mult. Matriz};
+		\node [scale_style, below of=matmul1, node distance=2cm] (scale1) {Escalado};	
+		\node [mask_style, below of=scale1, node distance=2cm] (mask1) {Máscara (opc.)};	
+		\node [softmax_style, below of=mask1, node distance=2cm] (soft1) {Softmax};	
+		\node[right of=soft1, xshift=-0.5cm] (prev_last) {};
+		\node [matmul_style, below of=prev_last, node distance=2cm] (matmul1) {Mult. Matriz};				
+		
+		\draw[line width=0.046875cm, -latex] (0, 0) -- (0, -0.65);
+		\draw[line width=0.046875cm, -latex] (2, 0) -- (2, -0.65);
+		\draw[line width=0.046875cm, -latex] (4, 0) -- (4, -8.7);
+		
+		\draw[line width=0.046875cm, -latex] (1, -2.1) -- (1, -2.7);
+		\draw[line width=0.046875cm, -latex] (1, -4.1) -- (1, -4.7);
+		\draw[line width=0.046875cm, -latex] (1, -6.1) -- (1, -6.7);
+		\draw[line width=0.046875cm, -latex] (1, -8.1) -- (1, -8.7);
+		
+		\draw[line width=0.046875cm, -latex] (2.5, -10.1) -- (2.5, -10.7);		
+		
+		
+	\end{tikzpicture}
+\end{document}

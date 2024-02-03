@@ -1,0 +1,47 @@
+\documentclass{standalone}
+\usepackage[T1]{fontenc}\usepackage{tikz}
+\usepackage{amsmath, amsfonts}
+\usetikzlibrary{arrows.meta}
+\begin{document}
+	\begin{tikzpicture}
+		\begin{scope}[yshift=9.5cm,xshift=4.5cm]
+			\coordinate(h1) at (0,0); 
+			\node[row] (r1) [below =0.28 of h1] {};
+			\node[circ1] (h11) [left=-0.47 of r1] {};
+			\node[circ1] (h12) [right=0.07 of h11] {};
+			\node[circ1] (h13) [right=0.07 of h12] {};
+			\node[row] (r2) [above=0.05 of r1]{};
+			\node[circ1] (h21) [above=0.17 of h11] {};
+			\node[circ1] (h22) [above=0.17 of h12] {};
+			\node[circ1] (h23) [above=0.17 of h13] {};
+			\node[row] [above=0.05 of r2]{};
+			\node[circ1] (h31) [above=0.17 of h21] {};
+			\node[circ1] (h32) [above=0.17 of h22] {};
+			\node[circ1] (h33) [above=0.17 of h23] {};
+			\node[box] (his1) at (h1) {};			
+		\end{scope}
+		\begin{scope}[yshift=9.4cm,xshift=4.4cm]
+			\coordinate(h1) at (0,0);
+			\fill[white,fill opacity=.8] (-0.8,-0.8) rectangle (0.8,0.8);
+			
+			\node[row] (r4) [above =1 of h1] {};
+			\node[circ3] (h41) [left=-0.47 of r4] {};
+			\node[circ3] (h42) [right=0.07 of h41] {};
+			\node[circ3] (h43) [right=0.07 of h42] {};
+			
+			\node[row] (r1) [below =0.28 of h1] {};
+			\node[circ1] (h11) [left=-0.47 of r1] {};
+			\node[circ1] (h12) [right=0.07 of h11] {};
+			\node[circ1] (h13) [right=0.07 of h12] {};
+			\node[row] (r2) [above=0.05 of r1]{};
+			\node[circ1] (h21) [above=0.17 of h11] {};
+			\node[circ1] (h22) [above=0.17 of h12] {};
+			\node[circ1] (h23) [above=0.17 of h13] {};
+			\node[row] [above=0.05 of r2]{};
+			\node[circ1] (h31) [above=0.17 of h21] {};
+			\node[circ1] (h32) [above=0.17 of h22] {};
+			\node[circ1] (h33) [above=0.17 of h23] {};
+			\node[box] (his1) at (h1) {};
+		\end{scope}
+	\end{tikzpicture}
+\end{document}

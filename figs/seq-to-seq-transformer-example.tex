@@ -1,0 +1,33 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usepackage[greek, spanish]{babel}
+
+
+\usetikzlibrary{shapes.geometric, arrows}
+
+\tikzstyle{stylein} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+
+\tikzstyle{styleout} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm,text centered, draw=black, fill=blue!30]
+
+\begin{document}
+	
+\begin{tikzpicture}[node distance=1.1cm]
+\node (f41) [stylein, text width=1.6cm] {\textgreek{ἓν}};
+\node (f42) [stylein, text width=1.6cm, right of=f41, xshift=1.1cm] {\textgreek{οἶδα}};
+\node (f43) [stylein, text width=1.6cm, right of=f42, xshift=1.1cm] {\textgreek{ὅτι}};
+\node (f44) [stylein, text width=1.6cm, right of=f43, xshift=1.1cm] {\textgreek{οὐδὲν}};
+\node (f45) [stylein, text width=1.6cm, right of=f44, xshift=1.1cm] {\textgreek{οἶδα}};
+
+\node (f51) [styleout, text width=1.6cm, below of=f41] {Sólo};
+\node (f52) [styleout, text width=1.6cm, right of=f51, xshift=1.1cm] {sé};
+\node (f53) [styleout, text width=1.6cm, right of=f52, xshift=1.1cm] {,};
+\node (f54) [styleout, text width=1.6cm, right of=f53, xshift=1.1cm] {que};
+\node (f55) [styleout, text width=1.6cm, right of=f54, xshift=1.1cm] {nada};
+\node (f56) [styleout, text width=1.6cm, right of=f55, xshift=1.1cm] {sé};
+
+
+
+\end{tikzpicture}
+
+\end{document}

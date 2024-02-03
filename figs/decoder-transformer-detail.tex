@@ -1,0 +1,93 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
+\tikzstyle{start} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{stop} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm,text centered, draw=black, fill=blue!30]
+
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=1cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{classifier} = [rectangle, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{decision} = [diamond, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\begin{document}
+	
+\begin{tikzpicture}[node distance=1.5cm]
+\node (start) [start, text width=2cm] {Salida desplazada};
+%\node (enc) [process, below of=start] {Codificador};
+\node (Q) [process, below of=start] {Q};
+\node (K) [process, left of=Q] {K};
+\node (V) [process, right of=Q] {V};
+\node (Att) [process, below of=Q] {Máscara + Atención};
+
+\node (SN) [process, below of=Att] {Sum \& Norm};
+\node (start2) [start, text width=2cm, left of=SN, xshift=-1cm] {Salida del último codificador};
+
+%\node (enc) [process, below of=start] {Codificador};
+\node (Qf) [process, below of=start2, xshift=0.8cm] {Q};
+\node (Kf) [process, left of=Qf] {K};
+\node (Vf) [process, right of=Qf] {V};
+\node (Attf) [process, below of=Qf] {Atención};
+\node (SNf) [process, below of=Attf] {Sum \& Norm};
+
+
+\node (FCN) [process, below of=SNf] {RNCC};
+\node (SN2) [process, below of=FCN] {Sum \& Norm};
+
+\node (stop) [stop, below of=SN2] {Salidas};
+
+
+%\node (outs) [startstop, left of=dec, xshift=-1.3cm, text width=2cm] {Salidas anteriores};
+%\node (clas) [classifier, below of=dec] {Clasificador};
+
+%\node (out) [stop, below of=clas, text width=2cm] {Salida siguiente};
+
+%\node (pro1) [process, below of=in1] {Process 1};
+%\node (dec1) [decision, below of=pro1, yshift=-0.5cm] {Decision 1};
+
+\draw [arrow] (start) -- (Q);
+\draw [arrow] (start) -- node {} ++(-1.1cm, -0.1cm) -| (K);
+\draw [arrow] (start) -- node {} ++(+1.1cm, -0.1cm) -| (V);
+
+\draw [arrow] (K) |- node {} ++(-0.5cm, -0.75cm) |- node {} ++(0cm, -0.75cm) -- (Att);
+\draw [arrow] (Q) -- (Att);
+\draw [arrow] (V) |- node {} ++(+0.5cm, -0.75cm) |- node {} ++(0cm, -0.75cm) -- (Att);
+
+\draw [arrow] (Att) -- (SN);
+
+\draw [arrow] (start) -- node {} ++(+2.25cm, 0cm) -| node {} ++(0cm, -4.5cm) -- (SN);
+
+\draw [arrow] (SN) ++(-0.2cm, -0.75cm) -- node{} ++(+1.2cm, 0cm) -| node {} ++(0cm, -2cm) |- (SNf);
+
+\draw [arrow] (SNf) |- node {} ++(+1.5cm, -0.75cm) -| node {} ++(0cm, -2cm) |- (SN2);
+
+\draw [arrow] (start2) ++(+0.8cm, -0.65cm) -- (Qf);
+\draw [arrow] (start2) ++(-0.7cm, -0.65cm)-- (Kf);
+\draw [arrow] (SN) ++(-0.2cm, -0.5cm) -- (Vf);
+
+\draw [arrow] (Kf) |- node {} ++(0cm, -0.75cm) |- node {} ++(0cm, -0.75cm) -- (Attf);
+\draw [arrow] (Qf) -- (Attf);
+\draw [arrow] (Vf) |- node {} ++(+0cm, -0.75cm) |- node {} ++(0cm, -0.75cm) -- (Attf);
+
+\draw [arrow] (Attf) -- (SNf);
+
+\draw [arrow] (SNf) -- (FCN);
+\draw [arrow] (FCN) -- (SN2);
+
+\draw [arrow] (SN2) -- (stop);
+
+%\draw [arrow] (enc) -- (dec);
+%\draw [arrow] (dec) -- (clas);
+%\draw [arrow] (clas) -- (out);
+
+%\draw [arrow] (outs) -- (dec);
+
+%\draw [arrow] (in1) -- (pro1);
+%\draw [arrow] (pro1) -- (dec1);
+
+\end{tikzpicture}
+
+\end{document}
